@@ -18,7 +18,7 @@ import glob
 import threading
 import copy
 
-def prototype_run():
+def prototype_run():#Original implementation from the bash script supplied by Brian Dobbins
     """Checking if the first argument of the file directory has been submitted."""
     if sys.argv[1]:
         pass
@@ -78,14 +78,14 @@ def prototype_run():
 
 
         
-def processorMultiplierFunc(numOfProcessors, processorMultiplier):
-    if type(numOfProcessors) == type(2):
+def processorMultiplierFunc(numOfProcessors, processorMultiplier):#processorMultiplierFunc() multiplies the number of processors allocated per run of a specified CESM model.
+    if type(numOfProcessors) == type(2):#The if statement checks to make sure that the supplied input is not an integer. It it is, the input is changed to an string.
         numOfProcessors = str(numOfProcessors)
     print("The number of processors: "+numOfProcessors)
-    numericalResult = int(numOfProcessors)*2**processorMultiplier
-    strResult = str(numericalResult)
+    numericalResult = int(numOfProcessors)*2**processorMultiplier#The processor value is multiplied by 2^(the iteration of CESM being ran)
+    strResult = str(numericalResult)#Convert the integer back to a string
     print("The string result of the number of processors: "+strResult)
-    return strResult
+    return strResult#Returning the number fo processors that are allocated
     
 """Reference: https://www.geeksforgeeks.org/convert-json-to-dictionary-in-python/"""
 def optimize_values_allocation_run(assortment_of_optimized_values, target_directory_for_CESM):#The optimize_values_allocation_run function takes values from jsons that have the specifications for the number of processors for each component as well as the totla number of processors
@@ -108,16 +108,16 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     processorIncrementationLoops = input("Number of times that the CESM model will be ran shall be ran.\n")#Number of iterations to run CESM, will be doubling the number of processors used each time based on the values supplied by the json files that will be loaded
 
     #Initiating new function for simplistic threading
-    collectThread = {}
-    assortmentOfTimingFileDirectory = []
-    accessingTimingFileDirectory = False
+    collectThread = {}#A dictionary that will be used to store the number of threads that will be generated dynamically
+    assortmentOfTimingFileDirectory = []#The list is to store the directories of the timing files to be used in the load balancing software.
+    accessingTimingFileDirectory = False#The accessingTimingFileDirectory variable is utilized to identify whether assortmentOfTimingFileDirectory is being written to by a thread.
     for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
-        CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,))
-        CESMprocess.start()
-        collectThread.uptdate(runCount:CESMprocess)
-    for threadingNumber in collectThread:
-        collectThread[threadingNumber].join()
-    return timing_file_directory, collection_of_optimized_values
+        CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,))#Starts a new CESM model be setup, built and run. Each one of the threads can be accessed using the keys of the dictionary they are stored in to access each thread as a value for the respective key in the dictionary.
+        CESMprocess.start()#Initiates the CESM model to setup, build and run with the given arguments.
+        collectThread.uptdate(runCount:CESMprocess)#Stores access to the thread within a disctionary with a numeric key for each thread.
+    for threadingNumber in collectThread:#For managing the threads that have been initiated.
+        collectThread[threadingNumber].join()# FOr wnsuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
+    return timing_file_directory, collection_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
 
 """The CESM setup, build, and submit commands are defined in the startCESMProcess() function. The setup process followed by the build process followed by the submission to the queue."""
 

@@ -112,6 +112,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     assortmentOfTimingFileDirectory = []#The list is to store the directories of the timing files to be used in the load balancing software.
     accessingTimingFileDirectory = False#The accessingTimingFileDirectory variable is utilized to identify whether assortmentOfTimingFileDirectory is being written to by a thread.
     for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
+        collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration
         CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,))#Starts a new CESM model be setup, built and run. Each one of the threads can be accessed using the keys of the dictionary they are stored in to access each thread as a value for the respective key in the dictionary.
         CESMprocess.start()#Initiates the CESM model to setup, build and run with the given arguments.
         collectThread.uptdate(runCount:CESMprocess)#Stores access to the thread within a disctionary with a numeric key for each thread.
@@ -197,7 +198,7 @@ def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolve
     #subprocess.call(["./xmlchange", "NTHRDS_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#NTHRDS value assigned for the "ESP" component
 
 
-def prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier):
+def prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier):#prepCESM() function serves to prepare the basic configurations for the setup, building and submission of the CESM model.
     """Creation of the case."""
     print("Printing the CESMROOT environment variable ",os.environ["CESMROOT"])#Visual check over for the CESMROOT environment variable
     print("The directory for the CESM contents: "+ target_directory_for_CESM)#Visual check over the for the directory that CESM will be building contents within
@@ -217,17 +218,17 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     """Now for altering the processor counts:"""
     componentDictionary = {0:"atm", 1:"cpl", 2:"ocn", 3:"wav", 4:"glc",5:"ice",6:"rof", 7:"lnd", 8:"esp"}#A dictionary of the components for the CESM model to build with
     #function to catch any componenets that have not been assigned a value from ntasks. Will be scaled based on the numerical identifier of the thread.
-    assignValuesForNTASKS(collection_of_optimized_values, componentDictionary, threadIdentifier)
+    assignValuesForNTASKS(collection_of_optimized_values, componentDictionary, threadIdentifier)#Assigning the NTASKS values.
 
     """ROOTPE Values are being established"""
     #The ./xmlchange command rewrites xml files that provide parameters for building the project
-    assignValuesForROOTPE(collection_of_optimized_values, componentDictionary, threadIdentifier)
+    assignValuesForROOTPE(collection_of_optimized_values, componentDictionary, threadIdentifier)#Assigning the ROOTPE values.
 
     """NTHRDS Values are being established"""
     #The ./xmlchange command rewrites xml files that provide parameters for building the project
-    assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier)
+    assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier)#Assigning the NTHRDS values.
 
-    timing_file_directory =os.getcwd()+"timing/"
+    timing_file_directory =os.getcwd()+"timing/"#Concatenates the directory with that of the timing files subdirectory.
     """setting the default parameters"""
     xmlchangeDefaultOptions()#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
     startCESMProcess()#Runs the CESM commands necessary for prepping and running a CESM project
@@ -235,87 +236,90 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     print("CESM job is submitted")
     #print("This is run: "+str(runCount))
     print("Conclusion of CESM run...")
-    accessControl = False
-    while(accessControl == False):
-        accessControl = checkTimingDirectoryListEdit(accessingTimingFileDirectory)
-        if accessControl == True:
+    accessControl = True#The accessControl variable is used to make sure that the current thread that the prepCESM code is in does not attempt to write a timing to the list of timing file directories at the same time as another timing file directory.
+    while(accessControl == True):#Initiate a loop for checking the access to the timing file directory.
+        accessControl = checkTimingDirectoryListEdit(accessingTimingFileDirectory)#checks the value of the accessControl in order to verify the assortmentOfTimingFileDirectory is not being accessed at a given time  by a different thread. 
+        if accessControl == True:#When accessControl is True, this indicates that the assortmentOfTimingFileDirectory is being accessed and thus this thred will be unable to write to assortmentOfTimingFileDirectory until the thread currently accessing assortmentOfTimingFileDirectory free to access
             pass
-        else:
-            accessingTimingFileDirectory[threadIdentifier] = True
-            assortmentOfTimingFileDirectory.append(timing_file_directory)
-            accessingTimingFileDirectory[threadIdentifier] = False
+        else:#When the accessControl value is False
+            accessingTimingFileDirectory[threadIdentifier] = True#First, make sure to write to the accessingTimingFileDirectory to ensure that the thread as a True value to make sure that the other threads have been restricted.
+            assortmentOfTimingFileDirectory.append(timing_file_directory)#Appends the timing file directory to the assortmentOfTimingFileDirectory to add another entry to record the total number of timing file directories. 
+            accessingTimingFileDirectory[threadIdentifier] = False# The accessingTimingFileDirectory list accessed after the thread is finished writing to the assortmentOfTimingFileDirectory list to permit the next thread to access assortmentOfTimingFileDirectory to write to it.
+            accessControl = False#Set accessControl is set to False to force the while loop to break.
+            
     print("Timing file directory appended for "+ str(threadIdentifier))
      
 
 
 
 def checkComponentValue(componentOptimizedValues, categoryForValues, modelComponent):#check checkComponentValue ensures that each component will be passed a value and if one is not present then the value passed will be 1
-    if categoryForValues == "ntasks":
-        if modelComponent in componentOptimizedValues:#An if condition
-            return componentOptimizedValues[modelComponent]
+    if categoryForValues == "ntasks":#For when the NTASKS parameters are being set. 
+        if modelComponent in componentOptimizedValues:#An if condition that pairs the componenets with the values for their parameters.
+            return componentOptimizedValues[modelComponent]#Returns the value of the NTASKS parameter for the respective CESM componenet.
         else:
-            return "1"
+            return "1"# Otherwise NTASKS is assigned to be 1
     else:
-        if modelComponent in componentOptimizedValues:#An if condition
-            return componentOptimizedValues[modelComponent]
+        if modelComponent in componentOptimizedValues:#An if condition for assigning the values of ROOTPE and NTHRDS
+            return componentOptimizedValues[modelComponent]#Assigns the respective value for the ROOTPE and NTHRDS parameters for the CESM model.
         else:
             return "0"
-def retrieve_recent_cesm_ntasks_json_file(numberOfRetrievals):
-    import json
-    directory_prefix = "/glade/work/"+os.environ["USER"]+"/optimum_json/"
-    model_CESM_values_dict ={}
-    collection_of_files = []
-    if prefix_keyword=="optimization_dictionaries":
-        collection_of_files = glob.glob("/glade/work/"+os.environ["USER"]+"/optimum_json/optimization_dictionaries*.json")
+
+def retrieve_recent_cesm_ntasks_json_file(numberOfRetrievals):#retrieve_recent_cesm_ntasks_json_file() function is utilized to retrieve the most recent json files that are generated by the load balancing code.
+    import json#importing json module of python.
+    directory_prefix = "/glade/work/"+os.environ["USER"]+"/optimum_json/"#A directory for storing the json files that are created from the load balancing code to preserve the optimal parameters for the ran CESM model.
+    model_CESM_values_dict ={}#For storing the optimal CESM parameter values that can be used to optimize CESM models.
+    collection_of_files = []#A list for the file directories that will be used for accessing the json files that are generated.
+    if prefix_keyword=="optimization_dictionaries":#Makes sure that the correct title for the json that will be created.
+        collection_of_files = glob.glob("/glade/work/"+os.environ["USER"]+"/optimum_json/optimization_dictionaries*.json")#acquiring the optimization_dictionaries json files to acquire the most recent variations that have been produced from the recent CESM model run.
     else:
-        print("An error has occurred in the json searching process...")
+        print("An error has occurred in the json searching process...")#The error for is being printed out to inform the user of what has occurred
         print("Please reexamine process...")
         print("Exiting...")
         exit()
-    print("The current inventory of json files:")
+    print("The current inventory of json files:")#Printing the list of json files that havve been accumulated in the collection_of_files list.
     print(collection_of_files)
-    if not collection_of_files:
-        while(collection_of_files == []):
+    if not collection_of_files:#If there are collection_of_files is empty the result is that the function waits for 10 second intervals to give time for earlier components of the script to have time to write the json files
+        while(collection_of_files == []):#While the collection_of_files remains an empty list... there is a wait of 10 seconds
             import time
             time.sleep(10)
-            json_file_storage =False
-            while(json_file_storage == False):
-                collection_of_files = glob.glob("/glade/work/"+os.environ["USER"]+"/optimum_json/*.json")
-                if "/glade/work/"+os.environ["USER"]+"/optimum_json/optimization_dictionaries*.json" not in collection_of_files:
-                    time.sleep(4)
+            json_file_storage =False#Used to verify that the correct number of recent json files have been stored within the collection_of_files
+            while(json_file_storage == False):#While loop that will continue as long as the correct number of json files have not been acquired.
+                collection_of_files = glob.glob("/glade/work/"+os.environ["USER"]+"/optimum_json/optimization_dictionaries*.json")#Accumulating the recently created json files directories within the collection_of_files
+                if ("/glade/work/"+os.environ["USER"]+"/optimum_json/optimization_dictionaries*.json" not in collection_of_files) and (len(collection_of_files)< numberOfRetrievals):#If statement that ensures the correct number of json files have been collected. If the correct number has not be collected, the process of collecting the json files will be recollected
+                    time.sleep(4)#Waiting four seconds
                     print("Still searching for json files")
-                else: 
-                    break
-    else:
-        recentVersionsJSON = []
-        for counter in range(numberOfRetrievals):
-            name_of_recent_json_file = max(collection_of_files, key = os.path.getctime)
-            recentVersionsJSON.append(name_of_recent_json_file)
-            collection_of_files.remove(name_of_recent_json_file)
-        dictionaryOfRecentJSONs = {}
-        counter = 0
-        for jsonFile in recentVersionsJSON:
-            with open(jsonFile) as location_of_dict:
-                model_CESM_values_dict = json.load(location_of_dict)
+                else: #Once all the recent json files are created form the CESM model runs
+                    break#Exit the loop
+    else:#Once te json files have been collected
+        recentVersionsJSON = []#The list of most recently created json directories
+        for counter in range(numberOfRetrievals):#For loop that counts up to the number of expected json files to be retrieved
+            name_of_recent_json_file = max(collection_of_files, key = os.path.getctime)#Retrieves the most recently created json file.
+            recentVersionsJSON.append(name_of_recent_json_file)#Appends the most recently created json file to the list of recently generated json files that will be passed to the next iteration of CESM.
+            collection_of_files.remove(name_of_recent_json_file)#Remove the most recently added file path in recentVersionsJSON from the collection_of_files list
+        dictionaryOfRecentJSONs = {}#The dictionary for the recent jsons that have been created
+        counterNum = 0#For generating keys for a dictionary starting with 0
+        for jsonFile in recentVersionsJSON:#The iteration through the file paths for the the collected json files collected here
+            with open(jsonFile) as location_of_dict:#Opening a reading process to extract the dictionary values that were stored within the json
+                model_CESM_values_dict = json.load(location_of_dict)#The dictionary of optimized CESM values is extracted.
                 print("Structure of the dictionary: ")
                 print(model_CESM_values_dict)
-                dictionaryOfRecentJSONs.update(counter:model_CESM_values_dict)
-             counter+=1
-        return dictionaryOfRecentJSONs
+                dictionaryOfRecentJSONs.update(counterNum:model_CESM_values_dict)#Adding the dictionary of optimized CESM parameters to the dictionary that contains the entiretly of the recent json files that were collected
+             counterNum+=1#increase the value by 1
+        return dictionaryOfRecentJSONs#returns the json of relevant CESM parameter values
 
-def folder_name():
-    named_folder = raw_input("Please name the folder that the CESM contents will be stored within...\n")
+def folder_name():#The function of folder_name() is used for the purpose of getting the file name for CESM as well as checking if the file does not already exist within the directory
+    named_folder = raw_input("Please name the folder that the CESM contents will be stored within...\n")#Input for the name of the file
     print("The name of the folder is "+ named_folder)
-    while(os.path.isfile(named_folder)):
+    while(os.path.isfile(named_folder)):#As long as the name of the folder exists in the directory, ask for a new name to be used
         print("Please choose a new name for the folder. The name that was entered happens to already exist.")
-        named_folder = raw_input("Input the new name of the folder.\n")
-    return named_folder
+        named_folder = raw_input("Input the new name of the folder.\n")#New input name
+    return named_folder# Return the submitted the name for the folder
 
-def checkSumOfTasksToMaxTasks(maxQuantityOfTasks,cesmTasksCalculated):
-    if cesmTasksCalculated == maxQuantityOfTasks:
+def checkSumOfTasksToMaxTasks(maxQuantityOfTasks,cesmTasksCalculated):#For ensuring that a calculated sum of the number of tasks is assigned is equivalent to the maximum number fo tasks.
+    if cesmTasksCalculated == maxQuantityOfTasks:#When they are equivalent, thenthe value of True is returned 
         return True
-    else:
-        False
+    else:#otherwise False is returned
+        return False
 
     
 

@@ -2,7 +2,7 @@
 _The Contributor Code of Conduct is for participants in our software projects and community._
 
 ## Our Pledge
-We, as contributors, creators, stewards, and maintainers (participants), of PyConform pledge to make participation in our software, system or hardware project and community a safe, productive, welcoming and inclusive experience for everyone.
+We, as contributors, creators, stewards, and maintainers (participants), of LoadBalanceForCESM pledge to make participation in our software, system or hardware project and community a safe, productive, welcoming and inclusive experience for everyone.
 All participants are required to abide by this Code of Conduct.
 This includes respectful treatment of everyone regardless of age, body size, disability, ethnicity, gender identity or expression, level of experience, nationality, political affiliation, veteran status, pregnancy, genetic information, physical appearance, race, religion, or sexual orientation, as well as any other characteristic protected under applicable US federal or state law.
 

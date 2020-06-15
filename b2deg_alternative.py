@@ -149,40 +149,52 @@ def checkTimingDirectoryListEdit(recordOfTimingDirectoryAccesses):
             
 def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
     #function to catch any componenets that have not been assigned a value from ntasks. Will be scaled based on the numerical identifier of the thread.
-    xmlNTASKSParameter
-    
-    subprocess.call(["./xmlchange", "NTASKS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ATM" model component
-    subprocess.call(["./xmlchange", "NTASKS_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[1]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "CPL" component
-    subprocess.call(["./xmlchange", "NTASKS_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[2]),numericalThreadIdentifier))])#The number of processors that will be allocated ot the "OCN" component
-    subprocess.call(["./xmlchange", "NTASKS_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[3]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "WAV" component
-    subprocess.call(["./xmlchange", "NTASKS_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[4]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "GLC" component
-    subprocess.call(["./xmlchange", "NTASKS_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[5]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ICE" component
-    subprocess.call(["./xmlchange", "NTASKS_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[6]),numericalThreadIdentifier))])# The number of processors that will be allocated to the "ROF" component
-    subprocess.call(["./xmlchange", "NTASKS_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[7]),numericalThreadIdentifier))])# The number of processors that will be allocated to the "LND" component
-    subprocess.call(["./xmlchange", "NTASKS_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ESP" component
+    #Possible for loop implementation
+    xmlNTASKSParameter =[]
+    for componentNumericalIdentifier in assortmentOfInvolvedComponents:
+        xmlNTASKSParameter = ["./xmlchange NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))])#The number of processors that will be allocated to the specified model component
+        subprocess.call(xmlNTASKSParameter)
+        
+    #subprocess.call(["./xmlchange", "NTASKS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ATM" model component
+    #subprocess.call(["./xmlchange", "NTASKS_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[1]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "CPL" component
+    #subprocess.call(["./xmlchange", "NTASKS_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[2]),numericalThreadIdentifier))])#The number of processors that will be allocated ot the "OCN" component
+    #subprocess.call(["./xmlchange", "NTASKS_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[3]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "WAV" component
+    #subprocess.call(["./xmlchange", "NTASKS_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[4]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "GLC" component
+    #subprocess.call(["./xmlchange", "NTASKS_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[5]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ICE" component
+    #subprocess.call(["./xmlchange", "NTASKS_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[6]),numericalThreadIdentifier))])# The number of processors that will be allocated to the "ROF" component
+    #subprocess.call(["./xmlchange", "NTASKS_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[7]),numericalThreadIdentifier))])# The number of processors that will be allocated to the "LND" component
+    #subprocess.call(["./xmlchange", "NTASKS_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ESP" component
     
 def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
-    subprocess.call(["./xmlchange", "ROOTPE_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ATM" component
-    subprocess.call(["./xmlchange", "ROOTPE_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[1]),numericalThreadIdentifier))])#ROOTPE value assigned for the "CPL" component
-    subprocess.call(["./xmlchange", "ROOTPE_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[2]),numericalThreadIdentifier))])#ROOTPE value assigned for the "OCN" component
-    subprocess.call(["./xmlchange", "ROOTPE_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[3]),numericalThreadIdentifier))])#ROOTPE value assigned for the "WAV" component
-    subprocess.call(["./xmlchange", "ROOTPE_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[4]),numericalThreadIdentifier))])#ROOTPE value assigned for the "GLC" component
-    subprocess.call(["./xmlchange", "ROOTPE_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[5]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ICE" component
-    subprocess.call(["./xmlchange", "ROOTPE_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[6]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ROF" component
-    subprocess.call(["./xmlchange", "ROOTPE_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[7]),numericalThreadIdentifier))])#ROOTPE value assigned for the "LND" component
-    subprocess.call(["./xmlchange", "ROOTPE_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ATM" component
+    xmlROOTPEParameter =[]
+    for componentNumericalIdentifier in assortmentOfInvolvedComponents:
+        xmlNTASKSParameter = ["./xmlchange ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))])#The number of processors that will be allocated to the specified model component
+        subprocess.call(xmlNTASKSParameter)
+    #subprocess.call(["./xmlchange", "ROOTPE_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ATM" component
+    #subprocess.call(["./xmlchange", "ROOTPE_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[1]),numericalThreadIdentifier))])#ROOTPE value assigned for the "CPL" component
+    #subprocess.call(["./xmlchange", "ROOTPE_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[2]),numericalThreadIdentifier))])#ROOTPE value assigned for the "OCN" component
+    #subprocess.call(["./xmlchange", "ROOTPE_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[3]),numericalThreadIdentifier))])#ROOTPE value assigned for the "WAV" component
+    #subprocess.call(["./xmlchange", "ROOTPE_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[4]),numericalThreadIdentifier))])#ROOTPE value assigned for the "GLC" component
+    #subprocess.call(["./xmlchange", "ROOTPE_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[5]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ICE" component
+    #subprocess.call(["./xmlchange", "ROOTPE_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[6]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ROF" component
+    #subprocess.call(["./xmlchange", "ROOTPE_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[7]),numericalThreadIdentifier))])#ROOTPE value assigned for the "LND" component
+    #subprocess.call(["./xmlchange", "ROOTPE_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ATM" component
 
 
 def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
-    subprocess.call(["./xmlchange", "NTHRDS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[0]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ATM" component
-    subprocess.call(["./xmlchange", "NTHRDS_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[1]), numericalThreadIdentifier))])#NTHRDS value assigned for the "CPL" component
-    subprocess.call(["./xmlchange", "NTHRDS_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[2]), numericalThreadIdentifier))])#NTHRDS value assigned for the "OCN" component
-    subprocess.call(["./xmlchange", "NTHRDS_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[3]), numericalThreadIdentifier))])#NTHRDS value assigned for the "WAV" component
-    subprocess.call(["./xmlchange", "NTHRDS_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[4]), numericalThreadIdentifier))])#NTHRDS value assigned for the "GLC" component
-    subprocess.call(["./xmlchange", "NTHRDS_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[5]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ICE" component
-    subprocess.call(["./xmlchange", "NTHRDS_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[6]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ROF" component
-    subprocess.call(["./xmlchange", "NTHRDS_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[7]), numericalThreadIdentifier))])#NTHRDS value assigned for the "LND" component
-    subprocess.call(["./xmlchange", "NTHRDS_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#NTHRDS value assigned for the "ESP" component
+    xmlNTASKSParameter =[]
+    for componentNumericalIdentifier in assortmentOfInvolvedComponents:
+        xmlNTASKSParameter = ["./xmlchange NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))])#The number of processors that will be allocated to the specified model component
+        subprocess.call(xmlNTASKSParameter)
+    #subprocess.call(["./xmlchange", "NTHRDS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[0]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ATM" component
+    #subprocess.call(["./xmlchange", "NTHRDS_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[1]), numericalThreadIdentifier))])#NTHRDS value assigned for the "CPL" component
+    #subprocess.call(["./xmlchange", "NTHRDS_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[2]), numericalThreadIdentifier))])#NTHRDS value assigned for the "OCN" component
+    #subprocess.call(["./xmlchange", "NTHRDS_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[3]), numericalThreadIdentifier))])#NTHRDS value assigned for the "WAV" component
+    #subprocess.call(["./xmlchange", "NTHRDS_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[4]), numericalThreadIdentifier))])#NTHRDS value assigned for the "GLC" component
+    #subprocess.call(["./xmlchange", "NTHRDS_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[5]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ICE" component
+    #subprocess.call(["./xmlchange", "NTHRDS_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[6]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ROF" component
+    #subprocess.call(["./xmlchange", "NTHRDS_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[7]), numericalThreadIdentifier))])#NTHRDS value assigned for the "LND" component
+    #subprocess.call(["./xmlchange", "NTHRDS_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#NTHRDS value assigned for the "ESP" component
 
 
 def prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier):
@@ -192,13 +204,13 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     print("Now the dictionary containing the value for the total amount of tasks:")#printing the dictionary containing the total amount of tasks
     print(total_tasks_dict)#The dictionary containg the total number of tasks
     print("The PROJECT environment variable: ", os.environ["PROJECT"])#Visual confirmation of the PROJECT environment variable being passed
-    commandRunCESM =os.environ["CESMROOT"]+"cime/scripts/create_newcase "+"--case "+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),runCount)+"_run"+str(runCount)+" --compset "+"B1850 "+"--res "+"f19_g17 "+"--project "+os.environ["PROJECT"]#The command to be ran in the shell for constructing a new instance of CESM to run.
+    commandRunCESM =os.environ["CESMROOT"]+"cime/scripts/create_newcase "+"--case "+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier)+" --compset "+"B1850 "+"--res "+"f19_g17 "+"--project "+os.environ["PROJECT"]#The command to be ran in the shell for constructing a new instance of CESM to run.
     print("CESM commands:")
     print(commandRunCESM)#Visual check over te commands to be ran for CESM
     subprocess.call([commandRunCESM],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=os.environ)#Initiating the command line script to be ran within bash
 
     """Assuming there are no errors, we change the directory."""
-    os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),runCount)+"_run"+str(runCount))#Changes the directory for the CESM project
+    os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),runCount)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
     #name_of_json = input("What is the name of the json file where the data is stored?")
 
 
@@ -213,6 +225,7 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
 
     """NTHRDS Values are being established"""
     #The ./xmlchange command rewrites xml files that provide parameters for building the project
+    assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier)
 
     timing_file_directory =os.getcwd()+"timing/"
     """setting the default parameters"""

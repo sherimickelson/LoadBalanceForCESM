@@ -8,6 +8,7 @@ import subprocess
 import shutil
 import os
 import b2deg_alternative
+import threading import Thread
 # Possibility of using command line arguments
 
 """
@@ -15,28 +16,29 @@ Reference: https://www.pythoncentral.io/pythons-time-sleep-pause-wait-sleep-stop
 Reference: https://stackoverflow.com/questions/53513/how-do-i-check-if-a-list-is-empty
 Reference: https://stackoverflow.com/questions/26151669/valueerror-max-arg-is-an-empty-sequence
 """
-#
-def command_line_parse():
-    comd_line_cesm_parser = argparse.ArgumentParser(description = "Command line arguments submitted to the python script for CESM. Supply the file directory, the number of processors for the non-ESP components, and the number of processors for the ESP component.")
-    comd_line_cesm_parser.add_argument("selected_file_directory", help="The file directory that the cesm files will be created within.")
-    comd_line_cesm_parser.add_argument("num_of_non_ESP_processors", help="The number of processors that non-ESP componenets will receive during the run of CESM")
-    comd_line_cesm_parser.add_argument("num_of_ESP_processors", help="The number of processors that the ESP component will receive during the run of CESM.")
-    cesm_comd_args = comd_line_cesm_parser.parse_args()
-    comd_line_inputs = [comd_line_cesm_parser.selected_file_directory, comd_line_cesm_parser.num_of_non_ESP_processors, comd_line_cesm_parser.num_of_ESP_processors]
    
 def initiate_first_runCESM():
-    comd_line_cesm_parser = argparse.ArgumentParser(description = "Command line arguments submitted to the python script for CESM. Supply the maximum amount of processors to be allocated to CESM.")
-    comd_line_cesm_parser.add_argument("selected_maxtasks", help="The maximum amount of processors to be allocated to CESM runs must be submitted.")
-    cesm_comd_args = comd_line_cesm_parser.parse_args()
-    targeted_timing_files_directory, completeCESMComponentDictionaryForLoad = b2deg_alternative.default_max_tasks_json(cesm_comd_args.selected_maxtasks)#Running the function Initiating CESM and load_balancing_solve.py
-    continueRunProcess = True
-    while(continueRunProcess==True):
-        continueRunProcess = checkBeforeNextRunOfLoadBalance()
-        intiate_base_load_balancing(targeted_timing_files_directory, completeCESMComponentDictionaryForLoad)
-        optimized_values_cesm_json = b2deg_alternative.retrieve_recent_cesm_ntasks_json_file(1)
-        continueRunProcess = checkBeforeNextRunOfCESM() 
-        targeted_timing_files_directory = optimize_values_allocation_run(optimized_values_cesm_json,total_tasks_for_cesm_json,target_directory_for_CESM)
- 
+    comd_line_cesm_parser = argparse.ArgumentParser(description = "Command line arguments submitted to the python script for CESM. Supply the maximum amount of processors to be allocated to CESM.")# The command line arguments are being read by this object for further usage and initiating the CESM model run
+    comd_line_cesm_parser.add_argument("selected_maxtasks", help="The maximum amount of processors to be allocated to CESM runs must be submitted.")#Adds the max tasks argument ot the command line input for parsing.
+    cesm_comd_args = comd_line_cesm_parser.parse_args()#The collection of parsing arguments to launch the CESM model with. 
+    targeted_timing_files_directory, completeCESMComponentDictionaryForLoad = b2deg_alternative.default_max_tasks_json(cesm_comd_args.selected_maxtasks)#Running the function Initiating CESM first to generate the timing files in the timing directory to enable the load_balancing_solve.py to run with the generated timing files for optimization
+    continueRunProcess = True# A record of user response of whether the user wants to continue with initiating load balancing and CESM runs
+    while(continueRunProcess==True):#The loop is here for continuing the process of running the load balancing code then running the CESM models.
+        continueRunProcess = checkBeforeNextRunOfLoadBalance()#Checking if the user desires to run the load balancing code for this iteration.
+        loopControlForCESMAndLoadBalance(continueRunProcess)#If the user does not want to run the load balancing code, the while loop will be broken.
+        intiate_base_load_balancing(targeted_timing_files_directory, completeCESMComponentDictionaryForLoad) #Load balancing code is initiated. Will produce a fresh json file necessary for the running of a CESM model.
+        optimized_values_cesm_json = b2deg_alternative.retrieve_recent_cesm_ntasks_json_file(len(targeted_timing_files_directory))#Running the retrieve_recent_cesm_ntasks_json_file() function that will retrieve the most recently created json files. The recent json files returned to be used by later CESM models.
+        continueRunProcess = checkBeforeNextRunOfCESM() #Checking if the user desires to build the CESM model for this iteration.
+        loopControlForCESMAndLoadBalance(continueRunProcess)#If the user does not want to run the CESM model, the while loop will be broken.
+        targeted_timing_files_directory = optimize_values_allocation_run(optimized_values_cesm_json,total_tasks_for_cesm_json,target_directory_for_CESM)#Returning timing files directories for the CESM model that will be built and ran
+
+
+def loopControlForCESMAndLoadBalance(recordForControlCheck):
+    if recordForControlCheck == true:
+        pass
+    else:
+        break 
+
 def checkBeforeNextRunOfCESM():
     checkforLoadBalanceRun = raw_input("Do you want to run the CESM software? y/n?")
     if checkforLoadBalanceRun.lower() == "y":
@@ -104,15 +106,21 @@ def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESM
         exit()#Exiting to keep the code from running into issues from "LB" environment variable not being set
     print("Environment variables are successfully exported.")#Confirms the envrionment variables have been successfully exported
     show_environment_variables_paths(mconda_environ,mconda_environ["PATH"],mconda_environ["CIME_DIR"], mconda_environ["PYTHONPATH"], mconda_environ["LB"])#Check to ensure that the environment variables have been successfully loaded into the mconda_environ for usage in the load balancing script
-    numOfIterations = input("How many times do you wish to run the load_balancing.py software?\n")#How many times the load balancing software is to be ran.
+    numOfIterations = len(timing_file_directory)#How many times the load balancing software is to be ran.
+    collectionOfThreadsForLoadBalancing= {}
     for iterationRun in range(numOfIterations):#Runs the load balancing software for the designated number of loops
-        #print(mconda_environ["LB"] + "/load_balancing_solve.py "+"--total-tasks "+" 108"+" --timing-dir"+ "/glade/work/"+mconda_environ["USER"]+"/Load_Balancing_Work/timing_files/ "+" --pe-output " +"new_env_mach_pes_run_"+str(iterationRun)+".xml")
-        print("Load balancing run ",iterationRun," has been initiated")
-        subcommand = mconda_environ["LB"]+"/load_balancing_solve.py --total-tasks "+completeDictionaryForCESMComponents["totaltasks"]+" --timing-dir "+os.getcwd()+"/timing/ --pe-output new_env_mach_pes_run_"+str(iterationRun)+".xml"
-	subprocess.Popen([subcommand],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=mconda_environ)
-        print("Load balancing run is executed: ", iterationRun)
+        produced_thread = Thread(target=loadBalanceThreadSpinUpConstruct, args=(iterationRun, mconda_environ, completeDictionaryForCESMComponents, timing_file_directory,))
+        produced_thread.start()
+        collectionOfThreadsForLoadBalancing.update(iterationRun:produced_thread)
+    for numericalIdentityOfThreadKey in collectionOfThreadsForLoadBalancing:
+        collectionOfThreadsForLoadBalancing[numericalIdentityOfThreadKey].join()
+    print("All load balancing processes have finished.")
 #
-
+def loadBalanceThreadSpinUpConstruct(numericalIdentifierForThread, mconda_designated_environ, entireDictionaryOfCESMComponents, assortment_of_directories_for_timing_files):
+    print("Load balancing run ", numericalIdentifierForThread," has been initiated")
+    subcommand = mconda_designated_environ["LB"]+"/load_balancing_solve.py --total-tasks "+entireDictionaryOfCESMComponents["totaltasks"]+" --timing-dir "+assortment_of_directories_for_timing_files[numericalIdentifierForThread]+" --pe-output new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"
+    subprocess.check_call([subcommand],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=mconda_designated_environ)
+    print("Load balancing run is executed: ", numericalIdentifierForThread)
 """
 Reference: https://docs.python.org/3/library/os.html
 """

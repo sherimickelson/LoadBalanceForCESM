@@ -1,10 +1,14 @@
-#LoadBalanceForCESM
+==================
+LoadBalanceForCESM
+==================
 
-##About
+About
+-----
 This repository contains code and instructions relevant to the load balancing endeavor for CESM.
 
-##Contributors:
-###Mentors:
+Contributors:
+-------------
+**Mentors:
 John Dennis, Sheri Mickelson, and Brian Dobbins
-###Students:
+**Students:
 Soudeh Kamali and Thomas Johnson III

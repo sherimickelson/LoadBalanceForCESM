@@ -10,6 +10,7 @@
 """Reference: https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder-using-python"""
 """Reference:https://www.geeksforgeeks.org/multithreading-python-set-1/"""
 """Reference: https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python"""
+"""Contains dependencies that cesm_allocation.py currently requires."""
 import os
 import sys
 import subprocess
@@ -308,7 +309,7 @@ def retrieve_recent_cesm_ntasks_json_file(numberOfRetrievals):#retrieve_recent_c
         return dictionaryOfRecentJSONs#returns the json of relevant CESM parameter values
 
 def folder_name():#The function of folder_name() is used for the purpose of getting the file name for CESM as well as checking if the file does not already exist within the directory
-    named_folder = raw_input("Please name the folder that the CESM contents will be stored within...\n")#Input for the name of the file
+    named_folder = raw_input("Please name the folder that the contents will be stored within...\n")#Input for the name of the file
     print("The name of the folder is "+ named_folder)
     while(os.path.isfile(named_folder)):#As long as the name of the folder exists in the directory, ask for a new name to be used
         print("Please choose a new name for the folder. The name that was entered happens to already exist.")
@@ -323,64 +324,42 @@ def checkSumOfTasksToMaxTasks(maxQuantityOfTasks,cesmTasksCalculated):#For ensur
 
     
 
-def make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary):
-    sumOfCESMTasks = 0
-    tasksProperlyAllocated = False
-    max_tasks_allocation_num = int(max_tasks_allocation)
-    for key in ntasks_dictionary:
-        sumOfCESMTasks += ntasks_dictionary[key]
-    while(tasksProperlyAllocated ==False):
-        if sumOfCESMTasks == max_tasks_allocation_num:
+def make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary):#make_equivalent_to_max_tasks() function is used to allocate tasks amongst the CESM components
+    sumOfCESMTasks = 0#Initiated to keep track of the total number of tasks that have been allocated.
+    tasksProperlyAllocated = False#The tasksProperlyAllocated is assigned False to indicate that the total number of tasks have not been properly allocated yet.
+    max_tasks_allocation_num = int(max_tasks_allocation)#Gets integer value for the total number of tasks inputted for the CESM model
+    for key in ntasks_dictionary:#Starts iterating through the components of the ntasks dictionary to extract their respective value.
+        sumOfCESMTasks += ntasks_dictionary[key]#Adds said value from the ntask allocation to be added to the sumOfCESMTasks for the purpose of tracking the total of the number of tasks for CESM
+    while(tasksProperlyAllocated ==False):#While loop checking if CESM tasks have been checked to be properly allocated.
+        if sumOfCESMTasks == max_tasks_allocation_num:#If the sumOfCESMTasks is equivalent to max_tasks_allocation_num, then tasksProperlyAllocatedis True and the loop will conclude
             tasksProperlyAllocated = True
-        elif sumOfCESMTasks < max_tasks_allocation_num:
-            for key in ntasks_dictionary:
-                ntasks_dictionary[key] += 1
-                sumOfCESMTasks += 1
-                tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)
-                if tasksProperlyAllocated ==True:
+        elif sumOfCESMTasks < max_tasks_allocation_num:#When the sumOfCESMTasks is less than the max_tasks_allocation_num, addition is utilized to add to the values of the ntasks of the components
+            for key in ntasks_dictionary:#Iterating through the components to get the value of the components to add to the values of said components.
+                ntasks_dictionary[key] += 1#For each iteration fo the for loop, add one to the value of the current component.
+                sumOfCESMTasks += 1#Add to the sumOfCESMTasks to maintain an updated count of the sum of ntasks allocations.
+                tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Checking if the sum of the ntasks allocation is equivalent to the total number of ntasks that have been set for the entirety of the CESM model.
+                if tasksProperlyAllocated ==True:#When the tasks are are allocated, the while loop will be broken.
                     break
-        elif sumOfCESMTasks > max_tasks_allocation_num:
-            for key in ntasks_dictionary:
-                ntasks_dictionary[key] -= 1
-                sumOfCESMTasks -= 1
-                tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)
-                if tasksProperlyAllocated ==True:
+        elif sumOfCESMTasks > max_tasks_allocation_num:#When the sumOfCESMTasks is greater than the max_tasks_allocation_num, subtraction is applied until the sum of the ntasks allocations is equivalent to the value of max_tasks_allocation
+            for key in ntasks_dictionary:#The for loop iterates through the components to enable access to the values that assigned to the component keys.
+                ntasks_dictionary[key] -= 1#The is decermented by one for the current ly accessed component key
+                sumOfCESMTasks -= 1#Decrementing the calculated sum of ntasks allocations
+                tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Check to ensure that the max_tasks_allocation and sumOfCESMTasks are equivalent
+                if tasksProperlyAllocated ==True:#When proper allocation is achieved, break the loop.
                     break
-    return ntasks_dictionary
+    return ntasks_dictionary#Returns the ntasks dictionary after correct allocations and checks have been perfromed
         
         
 
-def default_max_tasks_json(max_tasks_allocation):
-    fraction_max_tasks_callocation = int(max_tasks_allocation)/9
-    ntasks_dictionary ={"atm":fraction_max_tasks_callocation, "cpl":fraction_max_tasks_callocation, "ocn":fraction_max_tasks_callocation, "wav":fraction_max_tasks_callocation, "glc":fraction_max_tasks_callocation, "ice":fraction_max_tasks_callocation, "rof":fraction_max_tasks_callocation, "lnd":fraction_max_tasks_callocation, "esp":fraction_max_tasks_callocation}
-    recalculated_ntasks_dictionary = make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary)
-    totalTasksDictConversion ={"totaltasks": max_tasks_allocation}
-    rootpeDictCopy = deepcopy(ntasks_dictionary)
-    nthrdsDictCopy = deepcopy(ntasks_dictionary)
-    temporaryDictionaryForSubmission.update("ntasks": recalculated_ntasks_dictionary, "rootpe": rootpeDictCopy, "nthrds": nthrdsDictCopy, totalTasksDictConversion)
-    chosen_directory = folder_name()
-    optimize_values_allocation_run(temporaryDictionaryForSubmission, chosen_directory)
-
-def generate_defualt_cesm_tasks_allocation(max_tasks_allocation):
-    path_to_default_json = "/glade/work/"+os.environ["USER"]+"/optimum_json/"
+def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() function constructs basic json for submission to be setup and modeled by CESM. Takes an argument of the maximum amount of tasks that will be used by the model of CESM.
+    fraction_max_tasks_callocation = int(max_tasks_allocation)/9#In this initial setup the value of max_tasks_allocation is used to provide values by dividing the ntasks amounts. 
+    ntasks_dictionary ={"atm":fraction_max_tasks_callocation, "cpl":fraction_max_tasks_callocation, "ocn":fraction_max_tasks_callocation, "wav":fraction_max_tasks_callocation, "glc":fraction_max_tasks_callocation, "ice":fraction_max_tasks_callocation, "rof":fraction_max_tasks_callocation, "lnd":fraction_max_tasks_callocation, "esp":fraction_max_tasks_callocation}#There are allocations maintaaining that each componeent initially a fraction that is roughly equivalent to the value of max_tasks_allocation
+    recalculated_ntasks_dictionary = make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary)#Recalculates the values of ntasks for each of the components to make sure that the sum of the ntasks of the components is equivalent to the value of max_tasks_allocation
+    totalTasksDictConversion ={"totaltasks": max_tasks_allocation}#Creates a dictionary with the first key being "totaltasks" with the value max_tasks_allocation
+    rootpeDictCopy = deepcopy(ntasks_dictionary)#The ROOTPE dictionary is created
+    nthrdsDictCopy = deepcopy(ntasks_dictionary)#The NTHRDS dictionaty is being created
+    temporaryDictionaryForSubmission.update("ntasks": recalculated_ntasks_dictionary, "rootpe": rootpeDictCopy, "nthrds": nthrdsDictCopy, totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
+    chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
+    optimize_values_allocation_run(temporaryDictionaryForSubmission, chosen_directory)#Launches the first execution of a CESM model.
     
 
-def initiate_premiere_runCESM(maximum_num_of_tasks):
-    first_cesm_run_defaults = retrieve_recent_cesm_ntasks_json_file("default_cesm_tasks_values")
-    first_cesm_run_total_tasks_default_value = retrieve_recent_cesm_ntasks_json_file("default_total_tasks_cesm_values")
-    chosen_directory = folder_name()
-    optimize_values_allocation_run(first_cesm_run_defaults, first_cesm_run_total_tasks_default_value, chosen_directory)
-
-def initiate_run():
-    load_balancing_optimize_dict = retrieve_recent_cesm_ntasks_json_file("optimize_cesm_values")
-    load_balancing_total_tasks_dict = retrieve_recent_cesm_ntasks_json_file("total_tasks_cesm_values")
-    print("Check to make sure total tasks dictionary has loaded:")
-    print(load_balancing_total_tasks_dict)
-    chosen_directory = folder_name()
-    optimize_values_allocation_run(load_balancing_optimize_dict,load_balancing_total_tasks_dict, chosen_directory)
-
-def singleRunCESM(collection_of_optimized_values, target_directory_for_CESM):
-
-#initiate_run()
-#initiate_premiere_runCESM(maximum_num_of_tasks)
-#prototype_run()

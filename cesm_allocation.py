@@ -8,7 +8,7 @@ import subprocess
 import shutil
 import os
 import b2deg_alternative
-import threading import Thread
+from threading import Thread
 # Possibility of using command line arguments
 
 """
@@ -111,7 +111,7 @@ def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESM
     for iterationRun in range(numOfIterations):#Runs the load balancing software for the designated number of loops
         produced_thread = Thread(target=loadBalanceThreadSpinUpConstruct, args=(iterationRun, mconda_environ, completeDictionaryForCESMComponents, timing_file_directory,))#The construction of a thread to with necessary arguments for the launching execution of load balancing code
         produced_thread.start()#Initiation of said thread with previously assigned arguments
-        collectionOfThreadsForLoadBalancing.update(iterationRun:produced_thread)#Numerical key whose value is the thread that was previously intiated. 
+        collectionOfThreadsForLoadBalancing.update({iterationRun:produced_thread})#Numerical key whose value is the thread that was previously intiated. 
     for numericalIdentityOfThreadKey in collectionOfThreadsForLoadBalancing:#For loop for managing the multiple threads that are created.
         collectionOfThreadsForLoadBalancing[numericalIdentityOfThreadKey].join()#Ensuring that all threads will wait until all the threads have completed their processes. Then continue with the code execution.
     print("All load balancing processes have finished.")

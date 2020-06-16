@@ -116,7 +116,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
         collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration
         CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,))#Starts a new CESM model be setup, built and run. Each one of the threads can be accessed using the keys of the dictionary they are stored in to access each thread as a value for the respective key in the dictionary.
         CESMprocess.start()#Initiates the CESM model to setup, build and run with the given arguments.
-        collectThread.uptdate(runCount:CESMprocess)#Stores access to the thread within a disctionary with a numeric key for each thread.
+        collectThread.uptdate({runCount:CESMprocess})#Stores access to the thread within a disctionary with a numeric key for each thread.
     for threadingNumber in collectThread:#For managing the threads that have been initiated.
         collectThread[threadingNumber].join()# FOr wnsuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
     return timing_file_directory, collection_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
@@ -154,7 +154,7 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
     #Possible for loop implementation
     xmlNTASKSParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))])#The number of processors that will be allocated to the specified model component
+        xmlNTASKSParameter = ["./xmlchange NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
         
     #subprocess.call(["./xmlchange", "NTASKS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ATM" model component
@@ -170,7 +170,7 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
 def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
     xmlROOTPEParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))])#The number of processors that will be allocated to the specified model component
+        xmlNTASKSParameter = ["./xmlchange ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
     #subprocess.call(["./xmlchange", "ROOTPE_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ATM" component
     #subprocess.call(["./xmlchange", "ROOTPE_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[1]),numericalThreadIdentifier))])#ROOTPE value assigned for the "CPL" component
@@ -186,7 +186,7 @@ def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolve
 def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
     xmlNTASKSParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))])#The number of processors that will be allocated to the specified model component
+        xmlNTASKSParameter = ["./xmlchange NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
     #subprocess.call(["./xmlchange", "NTHRDS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[0]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ATM" component
     #subprocess.call(["./xmlchange", "NTHRDS_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[1]), numericalThreadIdentifier))])#NTHRDS value assigned for the "CPL" component
@@ -304,8 +304,8 @@ def retrieve_recent_cesm_ntasks_json_file(numberOfRetrievals):#retrieve_recent_c
                 model_CESM_values_dict = json.load(location_of_dict)#The dictionary of optimized CESM values is extracted.
                 print("Structure of the dictionary: ")
                 print(model_CESM_values_dict)
-                dictionaryOfRecentJSONs.update(counterNum:model_CESM_values_dict)#Adding the dictionary of optimized CESM parameters to the dictionary that contains the entiretly of the recent json files that were collected
-             counterNum+=1#increase the value by 1
+                dictionaryOfRecentJSONs.update({counterNum:model_CESM_values_dict})#Adding the dictionary of optimized CESM parameters to the dictionary that contains the entiretly of the recent json files that were collected
+            counterNum+=1#increase the value by 1
         return dictionaryOfRecentJSONs#returns the json of relevant CESM parameter values
 
 def folder_name():#The function of folder_name() is used for the purpose of getting the file name for CESM as well as checking if the file does not already exist within the directory
@@ -356,9 +356,13 @@ def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() funct
     ntasks_dictionary ={"atm":fraction_max_tasks_callocation, "cpl":fraction_max_tasks_callocation, "ocn":fraction_max_tasks_callocation, "wav":fraction_max_tasks_callocation, "glc":fraction_max_tasks_callocation, "ice":fraction_max_tasks_callocation, "rof":fraction_max_tasks_callocation, "lnd":fraction_max_tasks_callocation, "esp":fraction_max_tasks_callocation}#There are allocations maintaaining that each componeent initially a fraction that is roughly equivalent to the value of max_tasks_allocation
     recalculated_ntasks_dictionary = make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary)#Recalculates the values of ntasks for each of the components to make sure that the sum of the ntasks of the components is equivalent to the value of max_tasks_allocation
     totalTasksDictConversion ={"totaltasks": max_tasks_allocation}#Creates a dictionary with the first key being "totaltasks" with the value max_tasks_allocation
-    rootpeDictCopy = deepcopy(ntasks_dictionary)#The ROOTPE dictionary is created
-    nthrdsDictCopy = deepcopy(ntasks_dictionary)#The NTHRDS dictionaty is being created
-    temporaryDictionaryForSubmission.update("ntasks": recalculated_ntasks_dictionary, "rootpe": rootpeDictCopy, "nthrds": nthrdsDictCopy, totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
+    rootpeDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The ROOTPE dictionary is created prototype_run()
+    nthrdsDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The NTHRDS dictionaty is being created
+    temporaryDictionaryForSubmission ={}
+    temporaryDictionaryForSubmission.update({"ntasks": recalculated_ntasks_dictionary}) 
+    temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy}) 
+    temporaryDictionaryForSubmission.update({"nthrds": nthrdsDictCopy}) 
+    temporaryDictionaryForSubmission.update(totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
     optimize_values_allocation_run(temporaryDictionaryForSubmission, chosen_directory)#Launches the first execution of a CESM model.
     

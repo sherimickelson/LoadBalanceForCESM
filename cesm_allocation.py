@@ -113,18 +113,18 @@ def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESM
         produced_thread.start()#Initiation of said thread with previously assigned arguments
         collectionOfThreadsForLoadBalancing.update(iterationRun:produced_thread)#Numerical key whose value is the thread that was previously intiated. 
     for numericalIdentityOfThreadKey in collectionOfThreadsForLoadBalancing:#For loop for managing the multiple threads that are created.
-        collectionOfThreadsForLoadBalancing[numericalIdentityOfThreadKey].join()#Ensuring that all threads will wait until all the threads have completed their processes.
+        collectionOfThreadsForLoadBalancing[numericalIdentityOfThreadKey].join()#Ensuring that all threads will wait until all the threads have completed their processes. Then continue with the code execution.
     print("All load balancing processes have finished.")
 #
-def loadBalanceThreadSpinUpConstruct(numericalIdentifierForThread, mconda_designated_environ, entireDictionaryOfCESMComponents, assortment_of_directories_for_timing_files):
+def loadBalanceThreadSpinUpConstruct(numericalIdentifierForThread, mconda_designated_environ, entireDictionaryOfCESMComponents, assortment_of_directories_for_timing_files):#loadBalanceThreadSpinUpConstruct() function the executes the load balancing the python code  with the arguments provided for the function.
     print("Load balancing run ", numericalIdentifierForThread," has been initiated")
-    subcommand = mconda_designated_environ["LB"]+"/load_balancing_solve.py --total-tasks "+entireDictionaryOfCESMComponents["totaltasks"]+" --timing-dir "+assortment_of_directories_for_timing_files[numericalIdentifierForThread]+" --pe-output new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"
-    subprocess.check_call([subcommand],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=mconda_designated_environ)
+    subcommand = mconda_designated_environ["LB"]+"/load_balancing_solve.py --total-tasks "+entireDictionaryOfCESMComponents["totaltasks"]+" --timing-dir "+assortment_of_directories_for_timing_files[numericalIdentifierForThread]+" --pe-output new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"#The command that will be utilized to executed for an instance of the load balancing code.
+    subprocess.check_call([subcommand],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=mconda_designated_environ)#subprocess that will execute the above command in the shell.
     print("Load balancing run is executed: ", numericalIdentifierForThread)
 """
 Reference: https://docs.python.org/3/library/os.html
 """
-def show_environment_variables_paths(created_environment,var_PATH,var_CIME_DIR, var_PYTHONPATH, var_LB):
+def show_environment_variables_paths(created_environment,var_PATH,var_CIME_DIR, var_PYTHONPATH, var_LB):#For checking the environmental variables to make sure they are accurately submitted.
     print("The environment mconda_environ is being examined:")
     print("The PATH environment variable: "+var_PATH)
     print("The CIME_DIR environment variable: "+var_CIME_DIR)

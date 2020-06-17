@@ -356,8 +356,10 @@ def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() funct
     ntasks_dictionary ={"atm":fraction_max_tasks_callocation, "cpl":fraction_max_tasks_callocation, "ocn":fraction_max_tasks_callocation, "wav":fraction_max_tasks_callocation, "glc":fraction_max_tasks_callocation, "ice":fraction_max_tasks_callocation, "rof":fraction_max_tasks_callocation, "lnd":fraction_max_tasks_callocation, "esp":fraction_max_tasks_callocation}#There are allocations maintaaining that each componeent initially a fraction that is roughly equivalent to the value of max_tasks_allocation
     recalculated_ntasks_dictionary = make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary)#Recalculates the values of ntasks for each of the components to make sure that the sum of the ntasks of the components is equivalent to the value of max_tasks_allocation
     totalTasksDictConversion ={"totaltasks": max_tasks_allocation}#Creates a dictionary with the first key being "totaltasks" with the value max_tasks_allocation
-    rootpeDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The ROOTPE dictionary is created prototype_run()
-    nthrdsDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The NTHRDS dictionaty is being created
+    rootpeDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The ROOTPE dictionary is created prototype_run(). Placeholder until proper scaling for the allocations can be introduced.
+    nthrdsDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The NTHRDS dictionaty is being created. Placeholder until proper scaling for the allocations can be introduced.
+    for componentKey in nthrdsDictCopy:
+        nthrdsDictCopy[componentKey] = "1"
     temporaryDictionaryForSubmission ={}
     temporaryDictionaryForSubmission.update({"ntasks": recalculated_ntasks_dictionary}) 
     temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy}) 

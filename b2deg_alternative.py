@@ -104,7 +104,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
 
     """Setting up the case."""
     """Setting the version of CESM to be utilized."""
-    os.environ["CESMROOT"] = "/glade/p/cesm/releases/cesm2_1_1/"#The CESMROOT environemnt variable is set.
+    os.environ["CESMROOT"] = "/glade/work/"+os.environ["USER"]+"/Load_Balancing_Work/cesm2.1.3"#The CESMROOT environemnt variable is set.
     import json#imports the json library of python
     processorIncrementationLoops = input("Number of times that the CESM model will be ran shall be ran.\n")#Number of iterations to run CESM, will be doubling the number of processors used each time based on the values supplied by the json files that will be loaded
 
@@ -210,12 +210,14 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     print("Now the dictionary containing the value for the total amount of tasks:")#printing the dictionary containing the total amount of tasks
     print(collection_of_optimized_values["totaltasks"])#The dictionary containg the total number of tasks
     print("The PROJECT environment variable: ", os.environ["PROJECT"])#Visual confirmation of the PROJECT environment variable being passed
-    commandRunCESM =os.environ["CESMROOT"]+"cime/scripts/create_newcase "+"--case "+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier)+" --compset "+"B1850 "+"--res "+"f19_g17 "+"--project "+os.environ["PROJECT"]#The command to be ran in the shell for constructing a new instance of CESM to run.
+    commandRunCESM =[os.environ["CESMROOT"]+"/cime/scripts/create_newcase","--case",target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier), "--compset","B1850","--res","f19_g17","--project",os.environ["PROJECT"]]#The command to be ran in the shell for constructing a new instance of CESM to run.
     print("CESM commands:")
     print(commandRunCESM)#Visual check over te commands to be ran for CESM
-    subprocess.call([commandRunCESM],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=os.environ)#Initiating the command line script to be ran within bash
+    subprocess.call(commandRunCESM,shell=False,env=os.environ)#Initiating the command line script to be ran within bash
 
     """Assuming there are no errors, we change the directory."""
+    print(os.getcwd())
+    print(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))
     os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
     #name_of_json = input("What is the name of the json file where the data is stored?")
 
@@ -235,8 +237,8 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
 
     timing_file_directory =os.getcwd()+"/timing/"#Concatenates the directory with that of the timing files subdirectory.
     """setting the default parameters"""
-    #xmlchangeDefaultOptions()#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
-    #startCESMProcess()#Runs the CESM commands necessary for prepping and running a CESM project
+    xmlchangeDefaultOptions()#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
+    startCESMProcess()#Runs the CESM commands necessary for prepping and running a CESM project
 
     print("CESM job is submitted")
     #print("This is run: "+str(runCount))
@@ -372,6 +374,17 @@ def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() funct
     collectionOfDictionariesForCESM={0:temporaryDictionaryForSubmission}#The JSON struccture conforming for the remainder of the code.
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
     print("Visual of the structure of initial dictionary:", collectionOfDictionariesForCESM)
-    optimize_values_allocation_run(collectionOfDictionariesForCESM, chosen_directory)#Launches the first execution of a CESM model.
-    
+    timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct = optimize_values_allocation_run(collectionOfDictionariesForCESM, chosen_directory)#Launches the first execution of a CESM model.
+    return timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct 
+
+def rootperecalculate(rootpeDict,allocatedMaxTasks):
+    for componentKey in rootpeDict:
+        if componentKey=="ocn":
+            rootpeDict[componentKey] = str((int(allocatedMaxTasks)/2))
+        elif componentKey=="ice":
+            rootpeDict[componentKey]= str((int(int(allocatedMaxTasks)/2)*0.4))
+        elif componentKey=="wav":
+            rootpeDict[componentKey]= str((int(int(allocatedMaxTasks)/2)*0.6))
+        else:
+            rootpeDict[componentKey] = "0"
 

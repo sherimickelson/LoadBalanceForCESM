@@ -111,7 +111,9 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     #Initiating new function for simplistic threading
     collectThread = {}#A dictionary that will be used to store the number of threads that will be generated dynamically
     assortmentOfTimingFileDirectory = []#The list is to store the directories of the timing files to be used in the load balancing software.
-    accessingTimingFileDirectory = False#The accessingTimingFileDirectory variable is utilized to identify whether assortmentOfTimingFileDirectory is being written to by a thread.
+    accessingTimingFileDirectory = []#The accessingTimingFileDirectory variable is utilized to identify whether assortmentOfTimingFileDirectory is being written to by a thread.
+    for recordBool in range(processorIncrementationLoops):
+        accessingTimingFileDirectory[recordBool] = False
     for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
         collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration
         CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,))#Starts a new CESM model be setup, built and run. Each one of the threads can be accessed using the keys of the dictionary they are stored in to access each thread as a value for the respective key in the dictionary.
@@ -365,6 +367,7 @@ def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() funct
     temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy}) 
     temporaryDictionaryForSubmission.update({"nthrds": nthrdsDictCopy}) 
     temporaryDictionaryForSubmission.update(totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
+    collectionOfDictionariesForCESM={0:temporaryDictionaryForSubmission}#The JSON struccture conforming for the remainder of the code.
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
     optimize_values_allocation_run(temporaryDictionaryForSubmission, chosen_directory)#Launches the first execution of a CESM model.
     

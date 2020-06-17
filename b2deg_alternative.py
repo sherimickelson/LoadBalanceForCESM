@@ -16,7 +16,7 @@ import sys
 import subprocess
 import shutil
 import glob
-import threading
+from threading import Thread
 import copy
 
 def prototype_run():#Original implementation from the bash script supplied by Brian Dobbins
@@ -113,15 +113,17 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     assortmentOfTimingFileDirectory = []#The list is to store the directories of the timing files to be used in the load balancing software.
     accessingTimingFileDirectory = []#The accessingTimingFileDirectory variable is utilized to identify whether assortmentOfTimingFileDirectory is being written to by a thread.
     for recordBool in range(processorIncrementationLoops):
-        accessingTimingFileDirectory[recordBool] = False
+        accessingTimingFileDirectory.append(False)
+    print("Check access control list:", accessingTimingFileDirectory)
     for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
         collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration
         CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,))#Starts a new CESM model be setup, built and run. Each one of the threads can be accessed using the keys of the dictionary they are stored in to access each thread as a value for the respective key in the dictionary.
         CESMprocess.start()#Initiates the CESM model to setup, build and run with the given arguments.
-        collectThread.uptdate({runCount:CESMprocess})#Stores access to the thread within a disctionary with a numeric key for each thread.
+        collectThread.update({runCount:CESMprocess})#Stores access to the thread within a disctionary with a numeric key for each thread.
     for threadingNumber in collectThread:#For managing the threads that have been initiated.
-        collectThread[threadingNumber].join()# FOr wnsuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
-    return timing_file_directory, collection_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
+        collectThread[threadingNumber].join()# For ensuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
+    print("Before the return, examine the timing files: ",assortmentOfTimingFileDirectory," and the optimized CESM parameters: ", collection_of_optimized_values)
+    return assortmentOfTimingFileDirectory, assortment_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
 
 """The CESM setup, build, and submit commands are defined in the startCESMProcess() function. The setup process followed by the build process followed by the submission to the queue."""
 
@@ -156,7 +158,7 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
     #Possible for loop implementation
     xmlNTASKSParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
+        xmlNTASKSParameter = ["./xmlchange","NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
         
     #subprocess.call(["./xmlchange", "NTASKS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ATM" model component
@@ -172,7 +174,7 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
 def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
     xmlROOTPEParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
+        xmlNTASKSParameter = ["./xmlchange","ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
     #subprocess.call(["./xmlchange", "ROOTPE_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ATM" component
     #subprocess.call(["./xmlchange", "ROOTPE_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[1]),numericalThreadIdentifier))])#ROOTPE value assigned for the "CPL" component
@@ -188,7 +190,7 @@ def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolve
 def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
     xmlNTASKSParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
+        xmlNTASKSParameter = ["./xmlchange","NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
     #subprocess.call(["./xmlchange", "NTHRDS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[0]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ATM" component
     #subprocess.call(["./xmlchange", "NTHRDS_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[1]), numericalThreadIdentifier))])#NTHRDS value assigned for the "CPL" component
@@ -206,7 +208,7 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     print("Printing the CESMROOT environment variable ",os.environ["CESMROOT"])#Visual check over for the CESMROOT environment variable
     print("The directory for the CESM contents: "+ target_directory_for_CESM)#Visual check over the for the directory that CESM will be building contents within
     print("Now the dictionary containing the value for the total amount of tasks:")#printing the dictionary containing the total amount of tasks
-    print(total_tasks_dict)#The dictionary containg the total number of tasks
+    print(collection_of_optimized_values["totaltasks"])#The dictionary containg the total number of tasks
     print("The PROJECT environment variable: ", os.environ["PROJECT"])#Visual confirmation of the PROJECT environment variable being passed
     commandRunCESM =os.environ["CESMROOT"]+"cime/scripts/create_newcase "+"--case "+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier)+" --compset "+"B1850 "+"--res "+"f19_g17 "+"--project "+os.environ["PROJECT"]#The command to be ran in the shell for constructing a new instance of CESM to run.
     print("CESM commands:")
@@ -214,7 +216,7 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     subprocess.call([commandRunCESM],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=os.environ)#Initiating the command line script to be ran within bash
 
     """Assuming there are no errors, we change the directory."""
-    os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),runCount)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
+    os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
     #name_of_json = input("What is the name of the json file where the data is stored?")
 
 
@@ -229,12 +231,12 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
 
     """NTHRDS Values are being established"""
     #The ./xmlchange command rewrites xml files that provide parameters for building the project
-    assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier)#Assigning the NTHRDS values.
+    assignValuesForNTHRDS(collection_of_optimized_values, componentDictionary, threadIdentifier)#Assigning the NTHRDS values.
 
-    timing_file_directory =os.getcwd()+"timing/"#Concatenates the directory with that of the timing files subdirectory.
+    timing_file_directory =os.getcwd()+"/timing/"#Concatenates the directory with that of the timing files subdirectory.
     """setting the default parameters"""
-    xmlchangeDefaultOptions()#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
-    startCESMProcess()#Runs the CESM commands necessary for prepping and running a CESM project
+    #xmlchangeDefaultOptions()#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
+    #startCESMProcess()#Runs the CESM commands necessary for prepping and running a CESM project
 
     print("CESM job is submitted")
     #print("This is run: "+str(runCount))
@@ -249,7 +251,7 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
             assortmentOfTimingFileDirectory.append(timing_file_directory)#Appends the timing file directory to the assortmentOfTimingFileDirectory to add another entry to record the total number of timing file directories. 
             accessingTimingFileDirectory[threadIdentifier] = False# The accessingTimingFileDirectory list accessed after the thread is finished writing to the assortmentOfTimingFileDirectory list to permit the next thread to access assortmentOfTimingFileDirectory to write to it.
             accessControl = False#Set accessControl is set to False to force the while loop to break.
-            
+    print("The contents fo the timing file directory: ", assortmentOfTimingFileDirectory)        
     print("Timing file directory appended for "+ str(threadIdentifier))
      
 
@@ -369,6 +371,7 @@ def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() funct
     temporaryDictionaryForSubmission.update(totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
     collectionOfDictionariesForCESM={0:temporaryDictionaryForSubmission}#The JSON struccture conforming for the remainder of the code.
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
-    optimize_values_allocation_run(temporaryDictionaryForSubmission, chosen_directory)#Launches the first execution of a CESM model.
+    print("Visual of the structure of initial dictionary:", collectionOfDictionariesForCESM)
+    optimize_values_allocation_run(collectionOfDictionariesForCESM, chosen_directory)#Launches the first execution of a CESM model.
     
 

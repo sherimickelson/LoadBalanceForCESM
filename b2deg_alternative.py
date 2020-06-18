@@ -363,6 +363,7 @@ def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() funct
     recalculated_ntasks_dictionary = make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary)#Recalculates the values of ntasks for each of the components to make sure that the sum of the ntasks of the components is equivalent to the value of max_tasks_allocation
     totalTasksDictConversion ={"totaltasks": max_tasks_allocation}#Creates a dictionary with the first key being "totaltasks" with the value max_tasks_allocation
     rootpeDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The ROOTPE dictionary is created prototype_run(). Placeholder until proper scaling for the allocations can be introduced.
+    rootpeDictCopy = rootperecalculate(rootpeDict, max_tasks_allocation)
     nthrdsDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The NTHRDS dictionaty is being created. Placeholder until proper scaling for the allocations can be introduced.
     for componentKey in nthrdsDictCopy:
         nthrdsDictCopy[componentKey] = "1"
@@ -377,14 +378,37 @@ def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() funct
     timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct = optimize_values_allocation_run(collectionOfDictionariesForCESM, chosen_directory)#Launches the first execution of a CESM model.
     return timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct 
 
-def rootperecalculate(rootpeDict,allocatedMaxTasks):
-    for componentKey in rootpeDict:
-        if componentKey=="ocn":
-            rootpeDict[componentKey] = str((int(allocatedMaxTasks)/2))
-        elif componentKey=="ice":
-            rootpeDict[componentKey]= str((int(int(allocatedMaxTasks)/2)*0.4))
-        elif componentKey=="wav":
-            rootpeDict[componentKey]= str((int(int(allocatedMaxTasks)/2)*0.6))
+def rootperecalculate(rootpeDict,allocatedMaxTasks):#rootperecalculate() function that is recalculating the pe values allocated to each component.
+    for componentKey in rootpeDict:#For loop that iterates through the component keys of the rootpeDict
+        if componentKey=="ocn":#Ocean component gets the declared rootpe allocation
+            rootpeDict[componentKey] = int(allocatedMaxTasks)/2#The rootpe values are being rewritten for ocn component
+        elif componentKey=="ice":#Ice component gets the declared roootpe allocation
+            rootpeDict[componentKey]= int(int(allocatedMaxTasks)/2)*0.4#The rootpe values are being rewritten for ice component
+        elif componentKey=="wav":#Ice component gets the declared roootpe allocation
+            rootpeDict[componentKey]= int(int(allocatedMaxTasks)/2)*0.6#The rootpe values are being rewritten for wav component
         else:
             rootpeDict[componentKey] = "0"
-
+    sumOfROOTPE = rootpeDict["ocn"] + rootpeDict["ice"] + rootpeDict["wav"]
+    checkROOTPESum = False
+    while(checkROOTPESum == False):
+        if sumOfROOTPE == allocatedMaxTasks:
+            checkROOTPESum = True
+        elif sumOfROOTPE < allocatedMaxTasks:
+            for componentKey in rootpeDict:
+                if (componentKey=="ocn") or (componentKey=="ice") or (componentKey=="wav"):
+                    rootpeDict[componentKey] += 1
+                    sumOfROOTPE+=1
+                if sumOfROOTPE == allocatedMaxTasks:
+                    checkROOTPESum = True
+                    break
+        elif sumOfROOTPE > allocatedMaxTasks:
+            for componentKey in rootpeDict:
+                if (componentKey=="ocn") or (componentKey=="ice") or (componentKey=="wav"):
+                    rootpeDict[componentKey] -= 1
+                    sumOfROOTPE-=1
+                if sumOfROOTPE == allocatedMaxTasks:
+                    checkROOTPESum = True
+                    break
+        else:
+            print("Error has occurred...")
+    return rootpeDict

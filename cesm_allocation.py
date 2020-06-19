@@ -8,7 +8,7 @@ import subprocess
 import shutil
 import os
 import b2deg_alternative
-import threading import Thread
+from threading import Thread
 # Possibility of using command line arguments
 
 """
@@ -17,7 +17,7 @@ Reference: https://stackoverflow.com/questions/53513/how-do-i-check-if-a-list-is
 Reference: https://stackoverflow.com/questions/26151669/valueerror-max-arg-is-an-empty-sequence
 """
    
-def initiate_first_runCESM():
+def initiate_first_runCESM():#Function that intiates the default CESM run and in turn allows for succeeding runs of the load balancing software and the CESM model software.
     comd_line_cesm_parser = argparse.ArgumentParser(description = "Command line arguments submitted to the python script for CESM. Supply the maximum amount of processors to be allocated to CESM.")# The command line arguments are being read by this object for further usage and initiating the CESM model run
     comd_line_cesm_parser.add_argument("selected_maxtasks", help="The maximum amount of processors to be allocated to CESM runs must be submitted.")#Adds the max tasks argument ot the command line input for parsing.
     cesm_comd_args = comd_line_cesm_parser.parse_args()#The collection of parsing arguments to launch the CESM model with. 
@@ -33,27 +33,27 @@ def initiate_first_runCESM():
         targeted_timing_files_directory = optimize_values_allocation_run(optimized_values_cesm_json,total_tasks_for_cesm_json,target_directory_for_CESM)#Returning timing files directories for the CESM model that will be built and ran
 
 
-def loopControlForCESMAndLoadBalance(recordForControlCheck):
-    if recordForControlCheck == true:
+def loopControlForCESMAndLoadBalance(recordForControlCheck):#loopControlForCESMAndLoadBalance() function is used to check if the user wants the software to continue for load balancing and cesm executions.
+    if recordForControlCheck == True:#Do nothing
         pass
-    else:
-        break 
+    else:#Exit the code, the user no longer wants to continue
+        exit()
 
-def checkBeforeNextRunOfCESM():
-    checkforLoadBalanceRun = raw_input("Do you want to run the CESM software? y/n?")
-    if checkforLoadBalanceRun.lower() == "y":
+def checkBeforeNextRunOfCESM():#checkBeforeNextRunOfCESM() function is used to acquire the information as to whether user wants to run a CESM model.
+    checkforLoadBalanceRun = raw_input("Do you want to run the CESM software? y/n?")#Takes the user's response.
+    if checkforLoadBalanceRun.lower() == "y":#Yes, continue contnue with execution of the CESM run
         return True
-    elif checkforLoadBalanceRun.lower() =="n":
+    elif checkforLoadBalanceRun.lower() =="n":#No, do not continue with execution of the CESM run
         return False
     else:
         print("Instructions were unclear. Cancelling execution of the program.")
         exit()
 
-def checkBeforeNextRunOfLoadBalance():
-    checkforLoadBalanceRun = raw_input("Do you want to run the load balancing software? y/n?")
-    if checkforLoadBalanceRun.lower() == "y":
+def checkBeforeNextRunOfLoadBalance():#checkBeforeNextRunOfLoadBalance() function Ensures that the user wants to run the next iteration of the load balance software
+    checkforLoadBalanceRun = raw_input("Do you want to run the load balancing software? y/n?")#Asks user if they want to run the load balancing software again.
+    if checkforLoadBalanceRun.lower() == "y":#Run the load balancing software this iteration.
         return True
-    elif checkforLoadBalanceRun.lower() =="n":
+    elif checkforLoadBalanceRun.lower() =="n":#Do not run the load balancing software this iterarion.
         return False
     else:
         print("Instructions were unclear. Cancelling execution of the program.")
@@ -107,24 +107,24 @@ def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESM
     print("Environment variables are successfully exported.")#Confirms the envrionment variables have been successfully exported
     show_environment_variables_paths(mconda_environ,mconda_environ["PATH"],mconda_environ["CIME_DIR"], mconda_environ["PYTHONPATH"], mconda_environ["LB"])#Check to ensure that the environment variables have been successfully loaded into the mconda_environ for usage in the load balancing script
     numOfIterations = len(timing_file_directory)#How many times the load balancing software is to be ran.
-    collectionOfThreadsForLoadBalancing= {}
+    collectionOfThreadsForLoadBalancing= {}#Dictionary to keep track of the threads that will be generated dynamically in the for loop below.
     for iterationRun in range(numOfIterations):#Runs the load balancing software for the designated number of loops
-        produced_thread = Thread(target=loadBalanceThreadSpinUpConstruct, args=(iterationRun, mconda_environ, completeDictionaryForCESMComponents, timing_file_directory,))
-        produced_thread.start()
-        collectionOfThreadsForLoadBalancing.update(iterationRun:produced_thread)
-    for numericalIdentityOfThreadKey in collectionOfThreadsForLoadBalancing:
-        collectionOfThreadsForLoadBalancing[numericalIdentityOfThreadKey].join()
+        produced_thread = Thread(target=loadBalanceThreadSpinUpConstruct, args=(iterationRun, mconda_environ, completeDictionaryForCESMComponents, timing_file_directory,))#The construction of a thread to with necessary arguments for the launching execution of load balancing code
+        produced_thread.start()#Initiation of said thread with previously assigned arguments
+        collectionOfThreadsForLoadBalancing.update({iterationRun:produced_thread})#Numerical key whose value is the thread that was previously intiated. 
+    for numericalIdentityOfThreadKey in collectionOfThreadsForLoadBalancing:#For loop for managing the multiple threads that are created.
+        collectionOfThreadsForLoadBalancing[numericalIdentityOfThreadKey].join()#Ensuring that all threads will wait until all the threads have completed their processes. Then continue with the code execution.
     print("All load balancing processes have finished.")
 #
-def loadBalanceThreadSpinUpConstruct(numericalIdentifierForThread, mconda_designated_environ, entireDictionaryOfCESMComponents, assortment_of_directories_for_timing_files):
+def loadBalanceThreadSpinUpConstruct(numericalIdentifierForThread, mconda_designated_environ, entireDictionaryOfCESMComponents, assortment_of_directories_for_timing_files):#loadBalanceThreadSpinUpConstruct() function the executes the load balancing the python code  with the arguments provided for the function.
     print("Load balancing run ", numericalIdentifierForThread," has been initiated")
-    subcommand = mconda_designated_environ["LB"]+"/load_balancing_solve.py --total-tasks "+entireDictionaryOfCESMComponents["totaltasks"]+" --timing-dir "+assortment_of_directories_for_timing_files[numericalIdentifierForThread]+" --pe-output new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"
-    subprocess.check_call([subcommand],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=mconda_designated_environ)
+    subcommand = mconda_designated_environ["LB"]+"/load_balancing_solve.py --total-tasks "+entireDictionaryOfCESMComponents["totaltasks"]+" --timing-dir "+assortment_of_directories_for_timing_files[numericalIdentifierForThread]+" --pe-output new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"#The command that will be utilized to executed for an instance of the load balancing code.
+    subprocess.check_call([subcommand],stderr=subprocess.PIPE,stdout=subprocess.PIPE,shell=True,env=mconda_designated_environ)#subprocess that will execute the above command in the shell.
     print("Load balancing run is executed: ", numericalIdentifierForThread)
 """
 Reference: https://docs.python.org/3/library/os.html
 """
-def show_environment_variables_paths(created_environment,var_PATH,var_CIME_DIR, var_PYTHONPATH, var_LB):
+def show_environment_variables_paths(created_environment,var_PATH,var_CIME_DIR, var_PYTHONPATH, var_LB):#For checking the environmental variables to make sure they are accurately submitted.
     print("The environment mconda_environ is being examined:")
     print("The PATH environment variable: "+var_PATH)
     print("The CIME_DIR environment variable: "+var_CIME_DIR)

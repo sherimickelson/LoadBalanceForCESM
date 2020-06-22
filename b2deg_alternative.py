@@ -128,7 +128,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
         print("Gathering the threads.")
         collectThread[threadingNumber].join()# For ensuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
         print("...___...")
-    print("Before the return, examine the timing files: ",assortmentOfTimingFileDirectory," and the optimized CESM parameters: ", collection_of_optimized_values)
+    print("Before the return, examine the timing files: ",assortmentOfTimingFileDirectory," and the CESM parameters: ", collection_of_optimized_values)
     return assortmentOfTimingFileDirectory, assortment_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
 
 """The CESM setup, build, and submit commands are defined in the startCESMProcess() function. The setup process followed by the build process followed by the submission to the queue."""
@@ -195,9 +195,8 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     subprocess.check_call(commandRunCESM,shell=False,env=os.environ)#Initiating the command line script to be ran within bash
 
     """Assuming there are no errors, we change the directory."""
-    print(os.getcwd())
     print(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))
-    caseSubDirectory =os.getcwd()+"/"+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier)
+    caseSubDirectory =str("/glade/work/"+os.environ["USER"]+"/"+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))
     caseSubDirectoryExists = False
     import time
     for restCounter in range(25):
@@ -241,8 +240,8 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
             assortmentOfTimingFileDirectory.append(timing_file_directory)#Appends the timing file directory to the assortmentOfTimingFileDirectory to add another entry to record the total number of timing file directories. 
             accessingTimingFileDirectory[threadIdentifier] = False# The accessingTimingFileDirectory list accessed after the thread is finished writing to the assortmentOfTimingFileDirectory list to permit the next thread to access assortmentOfTimingFileDirectory to write to it.
             accessControl = False#Set accessControl is set to False to force the while loop to break.
-    print("The contents fo the timing file directory: ", assortmentOfTimingFileDirectory)        
-    print("Timing file directory appended for "+ str(threadIdentifier))
+    print("The contents of the timing file directory: ", assortmentOfTimingFileDirectory)        
+    print("Timing file directory appended for thread"+ str(threadIdentifier))
      
 
 

@@ -77,11 +77,7 @@ Reference: https://stackoverflow.com/questions/40697845/what-is-a-good-practice-
 """
 def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESMComponents):# Runs the cesm and load balancing python code
     import time# Time imported on to allow for waiting
-    run_CESM_on_optimal_outputs_decision = False#Boolean value for determining whether or not to run CESM with optimal values
-    if run_CESM_on_optimal_outputs == "y":#Conditional statemtn that is run if y is previously inputted
-        run_CESM_on_optimal_outputs_decision = True#Shifts run_CESM_on_optimal_outputs_decision boolean variable to true 
-    elif run_CESM_on_optimal_outputs == "n":
-        run_CESM_on_optimal_outputs_decision = False#if run_CESM_on_optimal_outputs= "n" the run_CESM_on_optimal_outputs_decision boolean will be false
+    print("Load balancing software initiated.")
     mconda_environ = os.environ.copy()#Now making a clone of the environment to assign the environment variables of "PATH," "CIME_DIR," "PYTHONPATH," and "LB" for usage in running the Load balacing code
     mconda_environ["PATH"] = "/glade/u/home/"+mconda_environ["USER"]+"/miniconda2/bin/"#Assigning the "PATH" variable to the copied environment
     mconda_environ["CIME_DIR"] ="/glade/work/"+mconda_environ["USER"]+"/Load_Balancing_Work/cesm2.1.3/cime"#Assigning the "CIME_DIR" variable to the copied environment

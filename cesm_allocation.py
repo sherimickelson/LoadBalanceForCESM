@@ -77,7 +77,6 @@ Reference: https://stackoverflow.com/questions/40697845/what-is-a-good-practice-
 """
 def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESMComponents):# Runs the cesm and load balancing python code
     import time# Time imported on to allow for waiting
-    run_CESM_on_optimal_outputs = raw_input("Do you want to run CESM with the optimized values? y/n (yes or no)\n")#For determining whether CESM will be run with optimized values or not
     run_CESM_on_optimal_outputs_decision = False#Boolean value for determining whether or not to run CESM with optimal values
     if run_CESM_on_optimal_outputs == "y":#Conditional statemtn that is run if y is previously inputted
         run_CESM_on_optimal_outputs_decision = True#Shifts run_CESM_on_optimal_outputs_decision boolean variable to true 
@@ -109,7 +108,8 @@ def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESM
     numOfIterations = len(timing_file_directory)#How many times the load balancing software is to be ran.
     collectionOfThreadsForLoadBalancing= {}#Dictionary to keep track of the threads that will be generated dynamically in the for loop below.
     for iterationRun in range(numOfIterations):#Runs the load balancing software for the designated number of loops
-        produced_thread = Thread(target=loadBalanceThreadSpinUpConstruct, args=(iterationRun, mconda_environ, completeDictionaryForCESMComponents, timing_file_directory,))#The construction of a thread to with necessary arguments for the launching execution of load balancing code
+        threadDesignatedDictionaryOfCESMComponentParameters = completeDictionaryForCESMComponents[iterationRun]
+        produced_thread = Thread(target=loadBalanceThreadSpinUpConstruct, args=(iterationRun, mconda_environ, threadDesignatedDictionaryOfCESMComponentParameters, timing_file_directory,))#The construction of a thread to with necessary arguments for the launching execution of load balancing code
         produced_thread.start()#Initiation of said thread with previously assigned arguments
         collectionOfThreadsForLoadBalancing.update({iterationRun:produced_thread})#Numerical key whose value is the thread that was previously intiated. 
     for numericalIdentityOfThreadKey in collectionOfThreadsForLoadBalancing:#For loop for managing the multiple threads that are created.

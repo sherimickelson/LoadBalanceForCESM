@@ -116,12 +116,18 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
         accessingTimingFileDirectory.append(False)
     print("Check access control list:", accessingTimingFileDirectory)
     for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
-        collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration
+        collection_of_optimized_values={}
+        if runCount in assortment_of_optimized_values:
+            collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration
+        else:
+            collection_of_optimized_values = assortment_of_optimized_values[0]
         CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,))#Starts a new CESM model be setup, built and run. Each one of the threads can be accessed using the keys of the dictionary they are stored in to access each thread as a value for the respective key in the dictionary.
         CESMprocess.start()#Initiates the CESM model to setup, build and run with the given arguments.
         collectThread.update({runCount:CESMprocess})#Stores access to the thread within a disctionary with a numeric key for each thread.
     for threadingNumber in collectThread:#For managing the threads that have been initiated.
+        print("Gathering the threads.")
         collectThread[threadingNumber].join()# For ensuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
+        print("...___...")
     print("Before the return, examine the timing files: ",assortmentOfTimingFileDirectory," and the optimized CESM parameters: ", collection_of_optimized_values)
     return assortmentOfTimingFileDirectory, assortment_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
 
@@ -161,30 +167,12 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
         xmlNTASKSParameter = ["./xmlchange","NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
         
-    #subprocess.call(["./xmlchange", "NTASKS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ATM" model component
-    #subprocess.call(["./xmlchange", "NTASKS_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[1]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "CPL" component
-    #subprocess.call(["./xmlchange", "NTASKS_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[2]),numericalThreadIdentifier))])#The number of processors that will be allocated ot the "OCN" component
-    #subprocess.call(["./xmlchange", "NTASKS_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[3]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "WAV" component
-    #subprocess.call(["./xmlchange", "NTASKS_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[4]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "GLC" component
-    #subprocess.call(["./xmlchange", "NTASKS_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[5]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ICE" component
-    #subprocess.call(["./xmlchange", "NTASKS_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[6]),numericalThreadIdentifier))])# The number of processors that will be allocated to the "ROF" component
-    #subprocess.call(["./xmlchange", "NTASKS_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[7]),numericalThreadIdentifier))])# The number of processors that will be allocated to the "LND" component
-    #subprocess.call(["./xmlchange", "NTASKS_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#The number of processors that will be allocated to the "ESP" component
     
 def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
     xmlROOTPEParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
         xmlNTASKSParameter = ["./xmlchange","ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
-    #subprocess.call(["./xmlchange", "ROOTPE_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[0]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ATM" component
-    #subprocess.call(["./xmlchange", "ROOTPE_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[1]),numericalThreadIdentifier))])#ROOTPE value assigned for the "CPL" component
-    #subprocess.call(["./xmlchange", "ROOTPE_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[2]),numericalThreadIdentifier))])#ROOTPE value assigned for the "OCN" component
-    #subprocess.call(["./xmlchange", "ROOTPE_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[3]),numericalThreadIdentifier))])#ROOTPE value assigned for the "WAV" component
-    #subprocess.call(["./xmlchange", "ROOTPE_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[4]),numericalThreadIdentifier))])#ROOTPE value assigned for the "GLC" component
-    #subprocess.call(["./xmlchange", "ROOTPE_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[5]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ICE" component
-    #subprocess.call(["./xmlchange", "ROOTPE_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[6]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ROF" component
-    #subprocess.call(["./xmlchange", "ROOTPE_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[7]),numericalThreadIdentifier))])#ROOTPE value assigned for the "LND" component
-    #subprocess.call(["./xmlchange", "ROOTPE_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#ROOTPE value assigned for the "ATM" component
 
 
 def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
@@ -192,15 +180,6 @@ def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolve
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
         xmlNTASKSParameter = ["./xmlchange","NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter)
-    #subprocess.call(["./xmlchange", "NTHRDS_ATM="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[0]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ATM" component
-    #subprocess.call(["./xmlchange", "NTHRDS_CPL="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[1]), numericalThreadIdentifier))])#NTHRDS value assigned for the "CPL" component
-    #subprocess.call(["./xmlchange", "NTHRDS_OCN="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[2]), numericalThreadIdentifier))])#NTHRDS value assigned for the "OCN" component
-    #subprocess.call(["./xmlchange", "NTHRDS_WAV="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[3]), numericalThreadIdentifier))])#NTHRDS value assigned for the "WAV" component
-    #subprocess.call(["./xmlchange", "NTHRDS_GLC="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[4]), numericalThreadIdentifier))])#NTHRDS value assigned for the "GLC" component
-    #subprocess.call(["./xmlchange", "NTHRDS_ICE="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[5]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ICE" component
-    #subprocess.call(["./xmlchange", "NTHRDS_ROF="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[6]), numericalThreadIdentifier))])#NTHRDS value assigned for the "ROF" component
-    #subprocess.call(["./xmlchange", "NTHRDS_LND="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[7]), numericalThreadIdentifier))])#NTHRDS value assigned for the "LND" component
-    #subprocess.call(["./xmlchange", "NTHRDS_ESP="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[8]),numericalThreadIdentifier))])#NTHRDS value assigned for the "ESP" component
 
 
 def prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier):#prepCESM() function serves to prepare the basic configurations for the setup, building and submission of the CESM model.
@@ -213,18 +192,27 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     commandRunCESM =[os.environ["CESMROOT"]+"/cime/scripts/create_newcase","--case",target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier), "--compset","B1850","--res","f19_g17","--project",os.environ["PROJECT"]]#The command to be ran in the shell for constructing a new instance of CESM to run.
     print("CESM commands:")
     print(commandRunCESM)#Visual check over te commands to be ran for CESM
-    subprocess.call(commandRunCESM,shell=False,env=os.environ)#Initiating the command line script to be ran within bash
+    subprocess.check_call(commandRunCESM,shell=False,env=os.environ)#Initiating the command line script to be ran within bash
 
     """Assuming there are no errors, we change the directory."""
     print(os.getcwd())
     print(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))
-    os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
+    caseSubDirectory =os.getcwd()+"/"+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier)
+    caseSubDirectoryExists = False
+    import time
+    for restCounter in range(25):
+        if os.path.isdir(caseSubDirectory):
+            os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
+            break
+        else:
+            time.sleep(3)
+            print("Still searching for "+caseSubDirectory)
     #name_of_json = input("What is the name of the json file where the data is stored?")
 
 
     """Now for altering the processor counts:"""
     componentDictionary = {0:"atm", 1:"cpl", 2:"ocn", 3:"wav", 4:"glc",5:"ice",6:"rof", 7:"lnd", 8:"esp"}#A dictionary of the components for the CESM model to build with
-    #function to catch any componenets that have not been assigned a value from ntasks. Will be scaled based on the numerical identifier of the thread.
+    #function to catch any components that have not been assigned a value from ntasks. Will be scaled based on the numerical identifier of the thread.
     assignValuesForNTASKS(collection_of_optimized_values, componentDictionary, threadIdentifier)#Assigning the NTASKS values.
 
     """ROOTPE Values are being established"""
@@ -334,36 +322,49 @@ def make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary):#make_
     sumOfCESMTasks = 0#Initiated to keep track of the total number of tasks that have been allocated.
     tasksProperlyAllocated = False#The tasksProperlyAllocated is assigned False to indicate that the total number of tasks have not been properly allocated yet.
     max_tasks_allocation_num = int(max_tasks_allocation)#Gets integer value for the total number of tasks inputted for the CESM model
-    for key in ntasks_dictionary:#Starts iterating through the components of the ntasks dictionary to extract their respective value.
-        sumOfCESMTasks += ntasks_dictionary[key]#Adds said value from the ntask allocation to be added to the sumOfCESMTasks for the purpose of tracking the total of the number of tasks for CESM
+    sumOfCESMTasks += ntasks_dictionary["ocn"] + ntasks_dictionary["atm"]#Adds said value from the ntask allocation to be added to the sumOfCESMTasks for the purpose of tracking the total of the number of tasks for CESM
     while(tasksProperlyAllocated ==False):#While loop checking if CESM tasks have been checked to be properly allocated.
         if sumOfCESMTasks == max_tasks_allocation_num:#If the sumOfCESMTasks is equivalent to max_tasks_allocation_num, then tasksProperlyAllocatedis True and the loop will conclude
             tasksProperlyAllocated = True
         elif sumOfCESMTasks < max_tasks_allocation_num:#When the sumOfCESMTasks is less than the max_tasks_allocation_num, addition is utilized to add to the values of the ntasks of the components
             for key in ntasks_dictionary:#Iterating through the components to get the value of the components to add to the values of said components.
-                ntasks_dictionary[key] += 1#For each iteration fo the for loop, add one to the value of the current component.
-                sumOfCESMTasks += 1#Add to the sumOfCESMTasks to maintain an updated count of the sum of ntasks allocations.
-                tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Checking if the sum of the ntasks allocation is equivalent to the total number of ntasks that have been set for the entirety of the CESM model.
-                if tasksProperlyAllocated ==True:#When the tasks are are allocated, the while loop will be broken.
-                    break
+                if key != "ocn":
+                    ntasks_dictionary[key] += 1#For each iteration fo the for loop, add one to the value of the current component.
+            sumOfCESMTasks += 1#Add to the sumOfCESMTasks to maintain an updated count of the sum of ntasks allocations.
+            tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Checking if the sum of the ntasks allocation is equivalent to the total number of ntasks that have been set for the entirety of the CESM model.
+            if tasksProperlyAllocated ==True:#When the tasks are are allocated, the while loop will be broken.
+                break
+            else:
+                ntasks_dictionary["ocn"] +=1
+                sumOfCESMTasks += 1
+            tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Checking if the sum of the ntasks allocation is equivalent to the total number of ntasks that have been set for the entirety of the CESM model.
+            if tasksProperlyAllocated ==True:#When the tasks are are allocated, the while loop will be broken.
+                break 
         elif sumOfCESMTasks > max_tasks_allocation_num:#When the sumOfCESMTasks is greater than the max_tasks_allocation_num, subtraction is applied until the sum of the ntasks allocations is equivalent to the value of max_tasks_allocation
             for key in ntasks_dictionary:#The for loop iterates through the components to enable access to the values that assigned to the component keys.
-                ntasks_dictionary[key] -= 1#The is decermented by one for the current ly accessed component key
-                sumOfCESMTasks -= 1#Decrementing the calculated sum of ntasks allocations
-                tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Check to ensure that the max_tasks_allocation and sumOfCESMTasks are equivalent
-                if tasksProperlyAllocated ==True:#When proper allocation is achieved, break the loop.
-                    break
+                if key != "ocn":
+                    ntasks_dictionary[key] -= 1#The is decermented by one for the current ly accessed component key
+            sumOfCESMTasks -= 1#Decrementing the calculated sum of ntasks allocations
+            tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Check to ensure that the max_tasks_allocation and sumOfCESMTasks are equivalent
+            if tasksProperlyAllocated ==True:#When proper allocation is achieved, break the loop.
+                break
+            else:
+                ntasks_dictionary["ocn"] -=1
+                sumOfCESMTasks -= 1
+            tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Checking if the sum of the ntasks allocation is equivalent to the total number of ntasks that have been set for the entirety of the CESM model.
+            if tasksProperlyAllocated ==True:#When the tasks are are allocated, the while loop will be broken.
+                break
     return ntasks_dictionary#Returns the ntasks dictionary after correct allocations and checks have been perfromed
         
         
 
 def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() function constructs basic json for submission to be setup and modeled by CESM. Takes an argument of the maximum amount of tasks that will be used by the model of CESM.
-    fraction_max_tasks_callocation = int(max_tasks_allocation)/9#In this initial setup the value of max_tasks_allocation is used to provide values by dividing the ntasks amounts. 
+    fraction_max_tasks_callocation = int(max_tasks_allocation)/2#In this initial setup the value of max_tasks_allocation is used to provide values by dividing the ntasks amounts. 
     ntasks_dictionary ={"atm":fraction_max_tasks_callocation, "cpl":fraction_max_tasks_callocation, "ocn":fraction_max_tasks_callocation, "wav":fraction_max_tasks_callocation, "glc":fraction_max_tasks_callocation, "ice":fraction_max_tasks_callocation, "rof":fraction_max_tasks_callocation, "lnd":fraction_max_tasks_callocation, "esp":fraction_max_tasks_callocation}#There are allocations maintaaining that each componeent initially a fraction that is roughly equivalent to the value of max_tasks_allocation
     recalculated_ntasks_dictionary = make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary)#Recalculates the values of ntasks for each of the components to make sure that the sum of the ntasks of the components is equivalent to the value of max_tasks_allocation
     totalTasksDictConversion ={"totaltasks": max_tasks_allocation}#Creates a dictionary with the first key being "totaltasks" with the value max_tasks_allocation
     rootpeDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The ROOTPE dictionary is created prototype_run(). Placeholder until proper scaling for the allocations can be introduced.
-    rootpeDictCopy = rootperecalculate(rootpeDict, max_tasks_allocation)
+    rootpeDictCopy = rootperecalculate(rootpeDictCopy, max_tasks_allocation)
     nthrdsDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The NTHRDS dictionaty is being created. Placeholder until proper scaling for the allocations can be introduced.
     for componentKey in nthrdsDictCopy:
         nthrdsDictCopy[componentKey] = "1"
@@ -382,33 +383,6 @@ def rootperecalculate(rootpeDict,allocatedMaxTasks):#rootperecalculate() functio
     for componentKey in rootpeDict:#For loop that iterates through the component keys of the rootpeDict
         if componentKey=="ocn":#Ocean component gets the declared rootpe allocation
             rootpeDict[componentKey] = int(allocatedMaxTasks)/2#The rootpe values are being rewritten for ocn component
-        elif componentKey=="ice":#Ice component gets the declared roootpe allocation
-            rootpeDict[componentKey]= int(int(allocatedMaxTasks)/2)*0.4#The rootpe values are being rewritten for ice component
-        elif componentKey=="wav":#Ice component gets the declared roootpe allocation
-            rootpeDict[componentKey]= int(int(allocatedMaxTasks)/2)*0.6#The rootpe values are being rewritten for wav component
         else:
             rootpeDict[componentKey] = "0"
-    sumOfROOTPE = rootpeDict["ocn"] + rootpeDict["ice"] + rootpeDict["wav"]
-    checkROOTPESum = False
-    while(checkROOTPESum == False):
-        if sumOfROOTPE == allocatedMaxTasks:
-            checkROOTPESum = True
-        elif sumOfROOTPE < allocatedMaxTasks:
-            for componentKey in rootpeDict:
-                if (componentKey=="ocn") or (componentKey=="ice") or (componentKey=="wav"):
-                    rootpeDict[componentKey] += 1
-                    sumOfROOTPE+=1
-                if sumOfROOTPE == allocatedMaxTasks:
-                    checkROOTPESum = True
-                    break
-        elif sumOfROOTPE > allocatedMaxTasks:
-            for componentKey in rootpeDict:
-                if (componentKey=="ocn") or (componentKey=="ice") or (componentKey=="wav"):
-                    rootpeDict[componentKey] -= 1
-                    sumOfROOTPE-=1
-                if sumOfROOTPE == allocatedMaxTasks:
-                    checkROOTPESum = True
-                    break
-        else:
-            print("Error has occurred...")
     return rootpeDict

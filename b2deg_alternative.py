@@ -133,22 +133,25 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
 
 """The CESM setup, build, and submit commands are defined in the startCESMProcess() function. The setup process followed by the build process followed by the submission to the queue."""
 
-def startCESMProcess():
-    subprocess.check_call(["./case.setup"])#The setup for the CESM model is performed using this command
-    subprocess.check_call(["./case.build"])#The building of the CESM model is performed using this command
-    subprocess.check_call(["./case.submit"])#The submission of the CESM model to the job queue is performed using this command 
+def startCESMProcess(targetCaseSubdirectory):
+    print("Tracking the case commands and directory: ./"+targetCaseSubdirectory+"/case.setup caseroot "+os.getcwd()+"/"+targetCaseSubdirectory)
+    setupCommand =[os.getcwd()+"/"+targetCaseSubdirectory+"/case.setup",os.getcwd()+"/"+targetCaseSubdirectory]
+    buildCommand =[os.getcwd()+"/"+targetCaseSubdirectory+"/case.build",os.getcwd()+"/"+targetCaseSubdirectory]
+    submitCommand =[os.getcwd()+"/"+targetCaseSubdirectory+"/case.submit",os.getcwd()+"/"+targetCaseSubdirectory]
+    subprocess.check_call(setupCommand,shell=False)#The setup for the CESM model is performed using this command
+    subprocess.check_call(buildCommand,shell=False)#The building of the CESM model is performed using this command
+    subprocess.check_call(submitCommand,shell=False)#The submission of the CESM model to the job queue is performed using this command 
     print("The CESM model has been successfully submitted.")
-    os.chdir("../")# moves to the upper level directory
 
 """Remaining default options for CESM are set using the xmlchangeDefaultOptions() function."""
-def xmlchangeDefaultOptions():
-    subprocess.call(["./xmlchange", "STOP_N=1"])
-    subprocess.call(["./xmlchange", "STOP_OPTION=ndays"])
-    subprocess.call(["./xmlchange", "REST_OPTION=never"])
-    subprocess.call(["./xmlchange", "COMP_RUN_BARRIERS=TRUE"])
-    subprocess.call(["./xmlchange", "DOUT_S=FALSE"])
-    subprocess.call(["./xmlchange", "GMAKE_J=6"])
-    subprocess.call(["./xmlchange", "JOB_WALLCLOCK_TIME=0:20"])# Allocated the amount time the job is allowed to run for upon submission to the queue.
+def xmlchangeDefaultOptions(targetCaseSubdirectory):
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=1"])
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_OPTION=ndays"])
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"REST_OPTION=never"])
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"COMP_RUN_BARRIERS=TRUE"])
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"DOUT_S=FALSE"])
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"GMAKE_J=6"])
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"JOB_WALLCLOCK_TIME=0:20"])# Allocated the amount time the job is allowed to run for upon submission to the queue.
 """
 Reference: https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder-using-python
 Reference: https://www.pythoncentral.io/pythons-time-sleep-pause-wait-sleep-stop-your-code/
@@ -159,27 +162,27 @@ def checkTimingDirectoryListEdit(recordOfTimingDirectoryAccesses):
             return True
     return False
             
-def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
+def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory):
     #function to catch any componenets that have not been assigned a value from ntasks. Will be scaled based on the numerical identifier of the thread.
     #Possible for loop implementation
     xmlNTASKSParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange","NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
-        subprocess.call(xmlNTASKSParameter)
+        xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
+        subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)
         
     
-def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
+def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory):
     xmlROOTPEParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange","ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
-        subprocess.call(xmlNTASKSParameter)
+        xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
+        subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)
 
 
-def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier):
+def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory):
     xmlNTASKSParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./xmlchange","NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
-        subprocess.call(xmlNTASKSParameter)
+        xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot", targetCaseSubDirectory,"NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier))]#The number of processors that will be allocated to the specified model component
+        subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)
 
 
 def prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier):#prepCESM() function serves to prepare the basic configurations for the setup, building and submission of the CESM model.
@@ -196,12 +199,14 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
 
     """Assuming there are no errors, we change the directory."""
     print(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))
+    caseRunSubdirectory= target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier)
     caseSubDirectory =str("/glade/work/"+os.environ["USER"]+"/"+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))
     caseSubDirectoryExists = False
     import time
     for restCounter in range(25):
         if os.path.isdir(caseSubDirectory):
-            os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
+            #os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
+            print(caseSubDirectory+" has been located.")
             break
         else:
             time.sleep(3)
@@ -212,20 +217,20 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     """Now for altering the processor counts:"""
     componentDictionary = {0:"atm", 1:"cpl", 2:"ocn", 3:"wav", 4:"glc",5:"ice",6:"rof", 7:"lnd", 8:"esp"}#A dictionary of the components for the CESM model to build with
     #function to catch any components that have not been assigned a value from ntasks. Will be scaled based on the numerical identifier of the thread.
-    assignValuesForNTASKS(collection_of_optimized_values, componentDictionary, threadIdentifier)#Assigning the NTASKS values.
+    assignValuesForNTASKS(collection_of_optimized_values, componentDictionary, threadIdentifier, caseRunSubdirectory)#Assigning the NTASKS values.
 
     """ROOTPE Values are being established"""
     #The ./xmlchange command rewrites xml files that provide parameters for building the project
-    assignValuesForROOTPE(collection_of_optimized_values, componentDictionary, threadIdentifier)#Assigning the ROOTPE values.
+    assignValuesForROOTPE(collection_of_optimized_values, componentDictionary, threadIdentifier, caseRunSubdirectory)#Assigning the ROOTPE values.
 
     """NTHRDS Values are being established"""
     #The ./xmlchange command rewrites xml files that provide parameters for building the project
-    assignValuesForNTHRDS(collection_of_optimized_values, componentDictionary, threadIdentifier)#Assigning the NTHRDS values.
+    assignValuesForNTHRDS(collection_of_optimized_values, componentDictionary, threadIdentifier, caseRunSubdirectory)#Assigning the NTHRDS values.
 
-    timing_file_directory =os.getcwd()+"/timing/"#Concatenates the directory with that of the timing files subdirectory.
+    timing_file_directory =os.getcwd()+"/"+caseRunSubdirectory+"/timing/"#Concatenates the directory with that of the timing files subdirectory.
     """setting the default parameters"""
-    xmlchangeDefaultOptions()#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
-    startCESMProcess()#Runs the CESM commands necessary for prepping and running a CESM project
+    xmlchangeDefaultOptions(caseRunSubdirectory)#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
+    startCESMProcess(caseRunSubdirectory)#Runs the CESM commands necessary for prepping and running a CESM project
 
     print("CESM job is submitted")
     #print("This is run: "+str(runCount))

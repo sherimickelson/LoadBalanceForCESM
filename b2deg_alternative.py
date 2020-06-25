@@ -137,15 +137,17 @@ def startCESMProcess(targetCaseSubdirectory):
     print("Tracking the case commands and directory: ./"+targetCaseSubdirectory+"/case.setup caseroot "+os.getcwd()+"/"+targetCaseSubdirectory)
     setupCommand =[os.getcwd()+"/"+targetCaseSubdirectory+"/case.setup",os.getcwd()+"/"+targetCaseSubdirectory]
     buildCommand =[os.getcwd()+"/"+targetCaseSubdirectory+"/case.build",os.getcwd()+"/"+targetCaseSubdirectory]
-    submitCommand =[os.getcwd()+"/"+targetCaseSubdirectory+"/case.submit",os.getcwd()+"/"+targetCaseSubdirectory]
+    #submitCommand =[os.getcwd()+"/"+targetCaseSubdirectory+"/case.submit",os.getcwd()+"/"+targetCaseSubdirectory]
+    submitCommand =["./case.submit"]
     subprocess.check_call(setupCommand,shell=False)#The setup for the CESM model is performed using this command
     subprocess.check_call(buildCommand,shell=False)#The building of the CESM model is performed using this command
-    subprocess.check_call(submitCommand,shell=False)#The submission of the CESM model to the job queue is performed using this command 
+    print("Model submission portion of the code.")
+    subprocess.check_call(submitCommand,shell=False,cwd=os.getcwd()+"/"+targetCaseSubdirectory)#The submission of the CESM model to the job queue is performed using this command 
     print("The CESM model has been successfully submitted.")
 
 """Remaining default options for CESM are set using the xmlchangeDefaultOptions() function."""
 def xmlchangeDefaultOptions(targetCaseSubdirectory):
-    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=1"])
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=7"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_OPTION=ndays"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"REST_OPTION=never"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"COMP_RUN_BARRIERS=TRUE"])
@@ -268,13 +270,7 @@ def retrieve_recent_cesm_ntasks_json_file(numberOfRetrievals):#retrieve_recent_c
     directory_prefix = "/glade/work/"+os.environ["USER"]+"/optimum_json/"#A directory for storing the json files that are created from the load balancing code to preserve the optimal parameters for the ran CESM model.
     model_CESM_values_dict ={}#For storing the optimal CESM parameter values that can be used to optimize CESM models.
     collection_of_files = []#A list for the file directories that will be used for accessing the json files that are generated.
-    if prefix_keyword=="optimization_dictionaries":#Makes sure that the correct title for the json that will be created.
-        collection_of_files = glob.glob("/glade/work/"+os.environ["USER"]+"/optimum_json/optimization_dictionaries*.json")#acquiring the optimization_dictionaries json files to acquire the most recent variations that have been produced from the recent CESM model run.
-    else:
-        print("An error has occurred in the json searching process...")#The error for is being printed out to inform the user of what has occurred
-        print("Please reexamine process...")
-        print("Exiting...")
-        exit()
+    collection_of_files = glob.glob("/glade/work/"+os.environ["USER"]+"/optimum_json/optimization_dictionaries*.json")#acquiring the optimization_dictionaries json files to acquire the most recent variations that have been produced from the recent CESM model run.
     print("The current inventory of json files:")#Printing the list of json files that havve been accumulated in the collection_of_files list.
     print(collection_of_files)
     if not collection_of_files:#If there are collection_of_files is empty the result is that the function waits for 10 second intervals to give time for earlier components of the script to have time to write the json files

@@ -147,7 +147,7 @@ def startCESMProcess(targetCaseSubdirectory):
 
 """Remaining default options for CESM are set using the xmlchangeDefaultOptions() function."""
 def xmlchangeDefaultOptions(targetCaseSubdirectory):
-    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=7"])
+    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=2"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_OPTION=ndays"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"REST_OPTION=never"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"COMP_RUN_BARRIERS=TRUE"])
@@ -296,9 +296,9 @@ def retrieve_recent_cesm_ntasks_json_file(numberOfRetrievals):#retrieve_recent_c
         for jsonFile in recentVersionsJSON:#The iteration through the file paths for the the collected json files collected here
             with open(jsonFile) as location_of_dict:#Opening a reading process to extract the dictionary values that were stored within the json
                 model_CESM_values_dict = json.load(location_of_dict)#The dictionary of optimized CESM values is extracted.
+                dictionaryOfRecentJSONs.update({counterNum:model_CESM_values_dict})#Adding the dictionary of optimized CESM parameters to the dictionary that contains the entiretly of the recent json files that were collected
                 print("Structure of the dictionary: ")
                 print(model_CESM_values_dict)
-                dictionaryOfRecentJSONs.update({counterNum:model_CESM_values_dict})#Adding the dictionary of optimized CESM parameters to the dictionary that contains the entiretly of the recent json files that were collected
             counterNum+=1#increase the value by 1
         return dictionaryOfRecentJSONs#returns the json of relevant CESM parameter values
 

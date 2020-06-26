@@ -30,7 +30,8 @@ def initiate_first_runCESM():#Function that intiates the default CESM run and in
         optimized_values_cesm_json = b2deg_alternative.retrieve_recent_cesm_ntasks_json_file(len(targeted_timing_files_directory))#Running the retrieve_recent_cesm_ntasks_json_file() function that will retrieve the most recently created json files. The recent json files returned to be used by later CESM models.
         continueRunProcess = checkBeforeNextRunOfCESM() #Checking if the user desires to build the CESM model for this iteration.
         loopControlForCESMAndLoadBalance(continueRunProcess)#If the user does not want to run the CESM model, the while loop will be broken.
-        targeted_timing_files_directory = optimize_values_allocation_run(optimized_values_cesm_json,total_tasks_for_cesm_json,target_directory_for_CESM)#Returning timing files directories for the CESM model that will be built and ran
+        target_directory_for_CESM = b2deg_alternative.folder_name() 
+        targeted_timing_files_directory = b2deg_alternative.optimize_values_allocation_run(optimized_values_cesm_json,target_directory_for_CESM)#Returning timing files directories for the CESM model that will be built and ran
 
 
 def loopControlForCESMAndLoadBalance(recordForControlCheck):#loopControlForCESMAndLoadBalance() function is used to check if the user wants the software to continue for load balancing and cesm executions.

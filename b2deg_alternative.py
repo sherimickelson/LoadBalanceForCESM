@@ -101,12 +101,10 @@ def checkCompsetValue(assortmentOfCESMValues):
         if "compset" in assortmentOfCESMValues[setOfCESMValues]:
             pass
         else:
-            if "ocn" in setOfCESMValues["ntasks"] and "atm" in setOfCESMValues["ntasks"]:
-                setOfCESMValues.update({"compset":"B1850"})
-            elif "cam" in setOfCESMValues["ntasks"] and "cam" in setOfCESMValues["ntasks"]:
-                setOfCESMValues.update({"compset":"BW1850"})
-            else:
-                setOfCESMValues.update({"compset":"B1850"})#setting compset as the default.
+            inputtedCompset = raw_input("No compset has been assigned. Please assign a compset...\n")
+            assortmentOfCESMValues[setOfCESMValues].update({"compset":inputtedCompset})
+
+
 
 """Reference: https://www.geeksforgeeks.org/convert-json-to-dictionary-in-python/"""
 def optimize_values_allocation_run(assortment_of_optimized_values, target_directory_for_CESM):#The optimize_values_allocation_run function takes values from jsons that have the specifications for the number of processors for each component as well as the totla number of processors
@@ -205,6 +203,7 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
     #function to catch any componenets that have not been assigned a value from ntasks. Will be scaled based on the numerical identifier of the thread.
     #Possible for loop implementation
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
+    if
         xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)
         
@@ -212,7 +211,15 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
 def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory, permittedToScale):
     xmlROOTPEParameter =[]
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale))]#The number of processors that will be allocated to the specified model component
+    if assortmentOfInvolvedComponents[componentNumericalIdentifier] == "wav":
+        if int(assortmentOfInvolvedComponents[componentNumericalIdentifier]) > 108:
+            xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#The number of processors that will be allocated to the specified model component
+        elif int(assortmentOfInvolvedComponents[componentNumericalIdentifier]) <= 108:
+            xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#The number of processors that will be allocated to the specified model component
+        else:
+            xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#The number of processors that will be allocated to the specified model component
+    else:
+        xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)
 
 
@@ -402,9 +409,8 @@ def make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary):#make_
         
         
 
-def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() function constructs basic json for submission to be setup and modeled by CESM. Takes an argument of the maximum amount of tasks that will be used by the model of CESM.
-    fraction_max_tasks_callocation = int(max_tasks_allocation)/2#In this initial setup the value of max_tasks_allocation is used to provide values by dividing the ntasks amounts. 
-    inputted_compset = raw_input("Please specify the compset to be used...\n")
+def default_max_tasks_json(acquired_command_line_args):#default_max_tasks_json() function constructs basic json for submission to be setup and modeled by CESM. Takes an argument of the maximum amount of tasks that will be used by the model of CESM.
+    fraction_max_tasks_callocation = int(acquired_command_line_args.max_tasks_allocation)/2#In this initial setup the value of max_tasks_allocation is used to provide values by dividing the ntasks amounts.
     ntasks_dictionary ={"atm":fraction_max_tasks_callocation, "cpl":fraction_max_tasks_callocation, "ocn":fraction_max_tasks_callocation, "wav":fraction_max_tasks_callocation, "glc":fraction_max_tasks_callocation, "ice":fraction_max_tasks_callocation, "rof":fraction_max_tasks_callocation, "lnd":fraction_max_tasks_callocation, "esp":fraction_max_tasks_callocation}#There are allocations maintaining that each componeent initially a fraction that is roughly equivalent to the value of max_tasks_allocation
     recalculated_ntasks_dictionary = make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary)#Recalculates the values of ntasks for each of the components to make sure that the sum of the ntasks of the components is equivalent to the value of max_tasks_allocation
     totalTasksDictConversion ={"totaltasks": max_tasks_allocation}#Creates a dictionary with the first key being "totaltasks" with the value max_tasks_allocation
@@ -415,12 +421,14 @@ def default_max_tasks_json(max_tasks_allocation):#default_max_tasks_json() funct
         nthrdsDictCopy[componentKey] = "1"
     temporaryDictionaryForSubmission ={}
     temporaryDictionaryForSubmission.update({"ntasks": recalculated_ntasks_dictionary}) 
-    temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy}) 
-    temporaryDictionaryForSubmission.update({"compset": inputted_compset})
+    temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy})
     temporaryDictionaryForSubmission.update({"nthrds": nthrdsDictCopy}) 
     temporaryDictionaryForSubmission.update(totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
     collectionOfDictionariesForCESM={0:temporaryDictionaryForSubmission}#The JSON struccture conforming for the remainder of the code.
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
+    specifiedcompset =""
+    if acquired_command_line_args.compset_designation == None:
+        pass
     print("Visual of the structure of initial dictionary:", collectionOfDictionariesForCESM)
     timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct = optimize_values_allocation_run(collectionOfDictionariesForCESM, chosen_directory)#Launches the first execution of a CESM model.
     return timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct 

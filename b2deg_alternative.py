@@ -84,11 +84,22 @@ def processorMultiplierFunc(numOfProcessors, processorMultiplier,permissionToSca
         numOfProcessors = str(numOfProcessors)
     print("The number of processors: "+numOfProcessors)
     multiplierEntry = 0
-    if (permissionToScale == True):
+    if (permissionToScale["permit-scaling"] == True):
         multiplierEntry = processorMultiplier
     else:
         pass
-    numericalResult = int(numOfProcessors)*2**multiplierEntry#The processor value is multiplied by 2^(the iteration of CESM being ran)
+    numericalResult = 0
+    if "exponential-scaling" in permissionToScale:
+        if permissionToScale["exponential-scaling"] == True:
+             numericalResult = int(numOfProcessors)*2**multiplierEntry#The processor value is multiplied by 2^(the iteration of CESM being ran)
+    elif "linear-scaling" in permissionToScale:
+        if permissionToScale["linear-scaling"] == True:
+            if multiplierEntry >= 1:
+                numericalResult = int(numOfProcessors)*2*multiplierEntry#The processor value is multiplied by 2*(the iteration of CESM being ran)
+            else:
+                numericalResult = int(numOfProcessors)
+    else:
+        numericalResult = int(numOfProcessors)
     strResult = str(numericalResult)#Convert the integer back to a string
     print("The string result of the number of processors: "+strResult)
     return strResult#Returning the number fo processors that are allocated
@@ -104,7 +115,13 @@ def checkCompsetValue(assortmentOfCESMValues):
             inputtedCompset = raw_input("No compset has been assigned. Please assign a compset...\n")
             assortmentOfCESMValues[setOfCESMValues].update({"compset":inputtedCompset})
 
-
+def assignAmountOfTimeToBeSimulated(dictOfCESMValues):
+    boolForAssignment = raw_input("Do you wish to assign the amount of time to be simulated by CESM. [y/n]\n")
+    if boolForAssignment.lower() == "y" or boolForAssignment.lower() == "yes":
+        measureForSimulation = int(input("Please enter a number for the amount of time to be simulated. Otherwise, the default value will be used.\n"))
+        dictOfCESMValues.update({"sim-time-measure": str(measureForSimulation)})
+    else:
+        pass
 
 """Reference: https://www.geeksforgeeks.org/convert-json-to-dictionary-in-python/"""
 def optimize_values_allocation_run(assortment_of_optimized_values, target_directory_for_CESM):#The optimize_values_allocation_run function takes values from jsons that have the specifications for the number of processors for each component as well as the totla number of processors
@@ -134,6 +151,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
         accessingTimingFileDirectory.append(False)
     print("Check access control list:", accessingTimingFileDirectory)
     permissionToScale = acquirePermissionToScale()
+    assignAmountOfTimeToBeSimulated(dictOfCESMValues)
     for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
         collection_of_optimized_values={}
         if runCount in assortment_of_optimized_values:
@@ -152,11 +170,19 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
 
 def acquirePermissionToScale():
     permissionreceived = raw_input("Do you wish to run CESM models while scaling the componenets for each run? y/n\n")
-    userPreferredOption = False
+    userPreferredOption = {"permit-scaling":False}
     while(True):
         if (permissionreceived.lower() == "y") or (permissionreceived.lower() == "yes"):
-            userPreferredOption = True
-            break
+            userPreferredOption["permit-scaling"] = True
+            scaling_Type = raw_input("Do you want exponential or linear scaling? [exp/lin]\n")
+            if scaling_Type.lower() == "exponential" or scaling_Type.lower() == "exp":
+                userPreferredOption.update({"exponential-scaling": True})
+                break
+            elif scaling_Type.lower() == "linear" or scaling_Type.lower() == "lin":
+                userPreferredOption.update({"linear-scaling": True})
+                break
+            else:
+                pass
         elif (permissionreceived.lower() == "n") or (permissionreceived.lower() == "no"):
             break
         else:
@@ -181,9 +207,15 @@ def startCESMProcess(targetCaseSubdirectory):
     print("The CESM model has been successfully submitted.")
 
 """Remaining default options for CESM are set using the xmlchangeDefaultOptions() function."""
-def xmlchangeDefaultOptions(targetCaseSubdirectory):
-    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=5"])
-    subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_OPTION=ndays"])
+def xmlchangeDefaultOptions(targetCaseSubdirectory,collectionOfCESMValues):
+    if "sim-time-designation" in collectionOfCESMValues:
+        subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N="+collectionOfCESMValues["sim-time-designation"]])
+    else:
+        subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=5"])
+    if "sim-time-unit" in collectionOfCESMValues:
+        subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_OPTION="+collectionOfCESMValues["sim-time-unit"]])
+    else:
+        subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_OPTION=ndays"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"REST_OPTION=never"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"COMP_RUN_BARRIERS=TRUE"])
     subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"DOUT_S=FALSE"])
@@ -276,7 +308,7 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
 
     timing_file_directory =os.getcwd()+"/"+caseRunSubdirectory+"/timing/"#Concatenates the directory with that of the timing files subdirectory.
     """setting the default parameters"""
-    xmlchangeDefaultOptions(caseRunSubdirectory)#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
+    xmlchangeDefaultOptions(caseRunSubdirectory,collection_of_optimized_values)#Calls the xmlchangeDefaultOptions() function that will call for the remaining values in the xml files to be taken
     startCESMProcess(caseRunSubdirectory)#Runs the CESM commands necessary for prepping and running a CESM project
 
     print("CESM job is submitted")
@@ -424,11 +456,26 @@ def default_max_tasks_json(acquired_command_line_args):#default_max_tasks_json()
     temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy})
     temporaryDictionaryForSubmission.update({"nthrds": nthrdsDictCopy}) 
     temporaryDictionaryForSubmission.update(totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
+    specifiedcompset =""
+    specifiedTimeLength =""
+    specifiedTimeUnit =""
+    if acquired_command_line_args.compset_designation == None:
+        specifiedcompset = raw_input("Please enter the compset you want to build the CESM model for and run. Examples: B1850, BWma1850...\n")
+        temporaryDictionaryForSubmission.update({"compset": specifiedcompset})
+    else:
+        pass
+    if acquired_command_line_args.sim_time_designation == None:
+        specifiedTimeLength = raw_input("Please enter the measure of time that you wish to run the CESM model for:\n")
+        temporaryDictionaryForSubmission.update({"sim-time-designation": specifiedTimeLength})
+    else:
+        pass
+    if acquired_command_line_args.sim_time_unit == None:
+        specifiedTimeUnit = raw_input("Please enter the units of time that will be used by the CESM model.")
+        temporaryDictionaryForSubmission.update({"sim-time-unit": specifiedTimeLength})
+    else:
+        pass
     collectionOfDictionariesForCESM={0:temporaryDictionaryForSubmission}#The JSON struccture conforming for the remainder of the code.
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
-    specifiedcompset =""
-    if acquired_command_line_args.compset_designation == None:
-        pass
     print("Visual of the structure of initial dictionary:", collectionOfDictionariesForCESM)
     timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct = optimize_values_allocation_run(collectionOfDictionariesForCESM, chosen_directory)#Launches the first execution of a CESM model.
     return timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct 

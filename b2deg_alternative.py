@@ -123,6 +123,16 @@ def assignAmountOfTimeToBeSimulated(dictOfCESMValues):
     else:
         pass
 
+def checkProcessorIncrementationLoops(valueSpecifiedForCESMRuns):
+    if valueSpecifiedForCESMRuns == 0:
+        valueSpecifiedForCESMRuns = 0
+    elif valueSpecifiedForCESMRuns < 0:
+        valueSpecifiedForCESMRuns = abs(valueSpecifiedForCESMRuns)
+    elif type(valueSpecifiedForCESMRuns) == type(0.02):
+        valueSpecifiedForCESMRuns = int(valueSpecifiedForCESMRuns)
+    else:
+        pass
+
 """Reference: https://www.geeksforgeeks.org/convert-json-to-dictionary-in-python/"""
 def optimize_values_allocation_run(assortment_of_optimized_values, target_directory_for_CESM):#The optimize_values_allocation_run function takes values from jsons that have the specifications for the number of processors for each component as well as the totla number of processors
     """Does the file directory already exist? Now we check:"""
@@ -141,8 +151,8 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     """Setting the version of CESM to be utilized."""
     os.environ["CESMROOT"] = "/glade/work/"+os.environ["USER"]+"/Load_Balancing_Work/cesm2.1.3"#The CESMROOT environemnt variable is set.
     import json#imports the json library of python
-    processorIncrementationLoops = input("Number of times that the CESM model will be ran shall be ran.\n")#Number of iterations to run CESM, will be doubling the number of processors used each time based on the values supplied by the json files that will be loaded
-
+    processorIncrementationLoops = input("Number of times that the CESM model will be ran shall be ran. (Only integer values greater than or equal to 0) \n")#Number of iterations to run CESM, will be doubling the number of processors used each time based on the values supplied by the json files that will be loaded
+    checkProcessorIncrementationLoops(processorIncrementationLoops)
     #Initiating new function for simplistic threading
     collectThread = {}#A dictionary that will be used to store the number of threads that will be generated dynamically
     assortmentOfTimingFileDirectory = []#The list is to store the directories of the timing files to be used in the load balancing software.
@@ -152,19 +162,23 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     print("Check access control list:", accessingTimingFileDirectory)
     permissionToScale = acquirePermissionToScale()
     assignAmountOfTimeToBeSimulated(dictOfCESMValues)
-    for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
-        collection_of_optimized_values={}
-        if runCount in assortment_of_optimized_values:
-            collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration
-        else:
-            collection_of_optimized_values = assortment_of_optimized_values[0]
-        CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,permissionToScale,))#Starts a new CESM model be setup, built and run. Each one of the threads can be accessed using the keys of the dictionary they are stored in to access each thread as a value for the respective key in the dictionary.
-        CESMprocess.start()#Initiates the CESM model to setup, build and run with the given arguments.
-        collectThread.update({runCount:CESMprocess})#Stores access to the thread within a disctionary with a numeric key for each thread.
-    for threadingNumber in collectThread:#For managing the threads that have been initiated.
-        print("Gathering the threads.")
-        collectThread[threadingNumber].join()# For ensuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
-        print("...___...")
+    if processorIncrementationLoops > 1:
+        for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
+            collection_of_optimized_values={}
+            if runCount in assortment_of_optimized_values:
+                collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration
+            else:
+                collection_of_optimized_values = assortment_of_optimized_values[(runCount % len(assortment_of_optimized_values))]
+            CESMprocess = Thread(target=prepCESM, args=(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,permissionToScale,))#Starts a new CESM model be setup, built and run. Each one of the threads can be accessed using the keys of the dictionary they are stored in to access each thread as a value for the respective key in the dictionary.
+            CESMprocess.start()#Initiates the CESM model to setup, build and run with the given arguments.
+            collectThread.update({runCount:CESMprocess})#Stores access to the thread within a disctionary with a numeric key for each thread.
+        for threadingNumber in collectThread:#For managing the threads that have been initiated.
+            print("Gathering the threads.")
+            collectThread[threadingNumber].join()# For ensuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
+            print("...___...")
+    else:
+        single_collection_of_optimized_values = assortment_of_optimized_values[runCount]
+        prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,permissionToScale)
     print("Before the return, examine the timing files: ",assortmentOfTimingFileDirectory," and the CESM parameters: ", collection_of_optimized_values)
     return assortmentOfTimingFileDirectory, assortment_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
 
@@ -275,8 +289,7 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     print("CESM commands:")
     print(commandRunCESM)#Visual check over te commands to be ran for CESM
     subprocess.check_call(commandRunCESM,shell=False,env=os.environ)#Initiating the command line script to be ran within bash
-
-    """Assuming there are no errors, we change the directory."""
+    
     print(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier, permittedToScale)+"_run"+str(threadIdentifier))
     caseRunSubdirectory= target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier,permittedToScale)+"_run"+str(threadIdentifier)
     caseSubDirectory =str("/glade/work/"+os.environ["USER"]+"/"+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier,permittedToScale)+"_run"+str(threadIdentifier))
@@ -456,24 +469,9 @@ def default_max_tasks_json(acquired_command_line_args):#default_max_tasks_json()
     temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy})
     temporaryDictionaryForSubmission.update({"nthrds": nthrdsDictCopy}) 
     temporaryDictionaryForSubmission.update(totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
-    specifiedcompset =""
-    specifiedTimeLength =""
-    specifiedTimeUnit =""
-    if acquired_command_line_args.compset_designation == None:
-        specifiedcompset = raw_input("Please enter the compset you want to build the CESM model for and run. Examples: B1850, BWma1850...\n")
-        temporaryDictionaryForSubmission.update({"compset": specifiedcompset})
-    else:
-        pass
-    if acquired_command_line_args.sim_time_designation == None:
-        specifiedTimeLength = raw_input("Please enter the measure of time that you wish to run the CESM model for:\n")
-        temporaryDictionaryForSubmission.update({"sim-time-designation": specifiedTimeLength})
-    else:
-        pass
-    if acquired_command_line_args.sim_time_unit == None:
-        specifiedTimeUnit = raw_input("Please enter the units of time that will be used by the CESM model.")
-        temporaryDictionaryForSubmission.update({"sim-time-unit": specifiedTimeLength})
-    else:
-        pass
+    obtainCompset(temporaryDictionaryForSubmission, acquired_command_line_args)
+    simTimeMeasure(temporaryDictionaryForSubmission, acquired_command_line_args)
+    simTimeUnits(temporaryDictionaryForSubmission, acquired_command_line_args)
     collectionOfDictionariesForCESM={0:temporaryDictionaryForSubmission}#The JSON struccture conforming for the remainder of the code.
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
     print("Visual of the structure of initial dictionary:", collectionOfDictionariesForCESM)
@@ -487,3 +485,42 @@ def rootperecalculate(rootpeDict,allocatedMaxTasks):#rootperecalculate() functio
         else:
             rootpeDict[componentKey] = "0"
     return rootpeDict
+
+def obtainCompset(constructedDict, collectionOfComdArgs):
+    if collectionOfComdArgs.compset_designation == None:
+        inputDecision = raw_input("Do you wich to use a specified compset or use the default compset? [y/n]")
+        if inputDecision.lower() == "y" or inputDecision.lower() == "yes":
+            specifiedcompset = raw_input("Please enter the compset you want to build the CESM model for and run. Examples: B1850, BWma1850...\n")
+            constructedDict.update({"compset": specifiedcompset})
+        elif inputDecision.lower() == "n" or inputDecision.lower() == "no":
+            constructedDict.update({"compset": "B1850"})
+        else:
+            constructedDict.update({"compset": "B1850"})
+    else:
+        pass
+
+def simTimeMeasure(constructedDict, collectionOfComdArgs):
+    if collectionOfComdArgs.sim_time_designation == None:
+        inputDecision = raw_input("Do you wich to use a specified measure of time or use the default measure of time? [y/n]")
+        if inputDecision.lower() == "y" or inputDecision.lower() == "yes":
+            specifiedTimeLength = raw_input("Please enter the measure of time you want to configure for the CESM model run.\n")
+        constructedDict.update({"sim-time-designation": specifiedTimeLength})
+    elif inputDecision.lower() == "n" or inputDecision.lower() == "no":
+        constructedDict.update({"sim-time-designation": "20"})
+    else:
+        constructedDict.update({"sim-time-designation": "20"})
+else:
+    pass
+
+def simTimeUnits(constructedDict, collectionOfComdArgs):
+    if collectionOfComdArgs.sim_time_unit == None:
+        inputDecision = raw_input("Do you wich to use a specified unit of time or use the default unit of time? [y/n]")
+        if inputDecision.lower() == "y" or inputDecision.lower() == "yes":
+            specifiedTimeUnits = raw_input("Please enter the measure of time you want to configure for the CESM model run. [Example: ndays]\n")
+        constructedDict.update({"sim-time-unit": specifiedTimeLength})
+    elif inputDecision.lower() == "n" or inputDecision.lower() == "no":
+        constructedDict.update({"sim-time-unit": "ndays"})
+    else:
+        constructedDict.update({"sim-time-unit": "ndays"})
+else:
+    pass

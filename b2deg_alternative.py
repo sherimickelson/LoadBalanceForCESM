@@ -483,29 +483,29 @@ def rootperecalculate(rootpeDict,allocatedMaxTasks):#rootperecalculate() functio
         if componentKey=="ocn":#Ocean component gets the declared rootpe allocation
             rootpeDict[componentKey] = int(allocatedMaxTasks)/2#The rootpe values are being rewritten for ocn component
         else:
-            rootpeDict[componentKey] = "0"
+            rootpeDict[componentKey] = "0"# The rootpe for any component that is not the OCN component is 0.
     return rootpeDict
 
-def obtainCompset(constructedDict, collectionOfComdArgs):
-    if collectionOfComdArgs.compset_designation == None:
-        inputDecision = raw_input("Do you wich to use a specified compset or use the default compset? [y/n]")
-        if inputDecision.lower() == "y" or inputDecision.lower() == "yes":
-            specifiedcompset = raw_input("Please enter the compset you want to build the CESM model for and run. Examples: B1850, BWma1850...\n")
-            constructedDict.update({"compset": specifiedcompset})
-        elif inputDecision.lower() == "n" or inputDecision.lower() == "no":
-            constructedDict.update({"compset": "B1850"})
+def obtainCompset(constructedDict, collectionOfComdArgs):# function for acquiring the compset of the CESM model to be built and ran.
+    if collectionOfComdArgs.compset_designation == None:# Checks if the compset has be set previously, if not the remainder of the fuction continues.
+        inputDecision = raw_input("Do you wish to use a specified compset or use the default compset? [y/n]")# There are choices of yes or no. Yes to input a compset. No to use the default compset that is set.
+        if inputDecision.lower() == "y" or inputDecision.lower() == "yes":#If the input is 'y' or 'yes'
+            specifiedcompset = raw_input("Please enter the compset you want to build the CESM model for and run. Examples: B1850, BWma1850...\n")#User can input the compset that is be used to build and run the model.
+            constructedDict.update({"compset": specifiedcompset})#Updates the compset utilizing the dictionary that will be fed into later parts of the code.
+        elif inputDecision.lower() == "n" or inputDecision.lower() == "no":#When the input is "n" or "no"
+            constructedDict.update({"compset": "B1850"})#Set the compset to the default B1850
         else:
-            constructedDict.update({"compset": "B1850"})
+            constructedDict.update({"compset": "B1850"})#Otherwise set the default is B1850
     else:
-        pass
+        pass#Otherwise do nothing
 
-def simTimeMeasure(constructedDict, collectionOfComdArgs):
-    if collectionOfComdArgs.sim_time_designation == None:
-        inputDecision = raw_input("Do you wich to use a specified measure of time or use the default measure of time? [y/n]")
-        if inputDecision.lower() == "y" or inputDecision.lower() == "yes":
-            specifiedTimeLength = raw_input("Please enter the measure of time you want to configure for the CESM model run.\n")
-        constructedDict.update({"sim-time-designation": specifiedTimeLength})
-    elif inputDecision.lower() == "n" or inputDecision.lower() == "no":
+def simTimeMeasure(constructedDict, collectionOfComdArgs):#Function to acquire the quantity of time that the model will be simulating.
+    if collectionOfComdArgs.sim_time_designation == None:# Checks if a value for the simulated time has already been declared.
+        inputDecision = raw_input("Do you wish to use a specified measure of time or use the default measure of time? [y/n]")# The input is "yes" or "no"
+        if inputDecision.lower() == "y" or inputDecision.lower() == "yes":#When the response is "y" or "yes"
+            specifiedTimeLength = raw_input("Please enter the measure of time you want to configure for the CESM model run.\n")#The measure of time to be simulated can be inputted here.
+        constructedDict.update({"sim-time-designation": specifiedTimeLength})#The quantity of time to be simulated by the model may be specified here.
+    elif inputDecision.lower() == "n" or inputDecision.lower() == "no":#
         constructedDict.update({"sim-time-designation": "20"})
     else:
         constructedDict.update({"sim-time-designation": "20"})
@@ -514,7 +514,7 @@ else:
 
 def simTimeUnits(constructedDict, collectionOfComdArgs):
     if collectionOfComdArgs.sim_time_unit == None:
-        inputDecision = raw_input("Do you wich to use a specified unit of time or use the default unit of time? [y/n]")
+        inputDecision = raw_input("Do you wish to use a specified unit of time or use the default unit of time? [y/n]")
         if inputDecision.lower() == "y" or inputDecision.lower() == "yes":
             specifiedTimeUnits = raw_input("Please enter the measure of time you want to configure for the CESM model run. [Example: ndays]\n")
         constructedDict.update({"sim-time-unit": specifiedTimeLength})
@@ -524,3 +524,28 @@ def simTimeUnits(constructedDict, collectionOfComdArgs):
         constructedDict.update({"sim-time-unit": "ndays"})
 else:
     pass
+
+def dict_optimized_values(ntasksDictTarget, rootpeDictTarget, nthreadsDictTarget, totaltasksValue):# Place in optimize.py to return ntasks dictionary
+    import os
+    import json
+    logger.info("Beginning to write the json")
+    json_location_prefix = "optimization_dictionaries"
+    placeholderDictionary = {}
+    placeholderDictionary.update({"ntasks": ntasksDictTarget})
+    placeholderDictionary.update({"rootpe": rootpeDictTarget})
+    placeholderDictionary.update({"nthrds": nthreadsDictTarget})
+    placeholderDictionary.update({"totaltasks": totaltasksValue})
+    json_location_exist = True
+    iteration = 1
+    logger.info("Checking json file presence.")
+    while json_location_exist == True:
+        json_location_prefix_iteration_combo = json_location_prefix+str(iteration)
+        if os.path.isfile("/glade/work/"+os.environ["USER"]+"/optimum_json/"+json_location_prefix_iteration_combo+".json"):
+            logger.info("Must edit file name.")
+            iteration += 1
+        else:
+            logger.info("New json file name is available.")
+            json_location_prefix = json_location_prefix_iteration_combo
+            json_location_exist= False
+    with open("/glade/work/"+os.environ["USER"]+"/optimum_json/"+json_location_prefix+".json", "w") as amendableFile:
+        json.dump(placeholderDictionary, amendableFile)

@@ -4,7 +4,8 @@ LoadBalanceForCESM
 
 About
 -----
-This repository contains code and instructions relevant to the load balancing endeavor for CESM.
+This repository contains code and instructions relevant to the load balancing endeavor for CESM. The project was initiated in the Summer of 2020.
+
 
 Contributors:
 -------------

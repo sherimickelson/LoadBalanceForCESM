@@ -247,33 +247,30 @@ def checkTimingDirectoryListEdit(recordOfTimingDirectoryAccesses):
             
 def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory,permittedToScale):
     #function to catch any componenets that have not been assigned a value from ntasks. Will be scaled based on the numerical identifier of the thread.
-    #Possible for loop implementation
-    for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-    if
-        xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale))]#The number of processors that will be allocated to the specified model component
-        subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)
+    xmlNTASKSParameter = []# The list of the "ntasks" related commands to be submitted for the configuration of the CESM model build and run
+    for componentNumericalIdentifier in assortmentOfInvolvedComponents:#Looping through the components to access each of them and make sure to access each component of the CESM model
+        if assortmentOfInvolvedComponents[componentNumericalIdentifier] == "wav":#The "wav" component is picked out for particular restrictions since it can become highly inefficent as more processors are assigned.
+            if int(assortmentOfInvolvedComponents[componentNumericalIdentifier]) > 108:#If the "wav" coponeent current has more than 108 sllocated for the ntasks
+                xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#Caps the WAV component at the value of 108
+            else:#When the "WAV" component possesses 108 or less allocated ntasks, assign that value for the "wav" component
+                xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(assortmentOfInvolvedComponents[componentNumericalIdentifier])]#The assignment of
+        else:
+            xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale))]#All other components are given ntasks allocations here
+        subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)#Submit commands to the configuration of the model for ntasks
         
     
-def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory, permittedToScale):
-    xmlROOTPEParameter =[]
-    for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-    if assortmentOfInvolvedComponents[componentNumericalIdentifier] == "wav":
-        if int(assortmentOfInvolvedComponents[componentNumericalIdentifier]) > 108:
-            xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#The number of processors that will be allocated to the specified model component
-        elif int(assortmentOfInvolvedComponents[componentNumericalIdentifier]) <= 108:
-            xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#The number of processors that will be allocated to the specified model component
-        else:
-            xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#The number of processors that will be allocated to the specified model component
-    else:
-        xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]))]#The number of processors that will be allocated to the specified model component
-        subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)
+def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory, permittedToScale):#The assignValuesForROOTPE function is to proper allocate the the model's values for the ROOTPE parameters for the CESM model
+    xmlROOTPEParameter =[]# An array that will collect a number of commands that will be used to run the processes in the system.
+    for componentNumericalIdentifier in assortmentOfInvolvedComponents:#Loops through the componenets available to get to each component to assign rootpe parameters.
+        xmlROOTPEParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"ROOTPE_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(checkComponentValue(assortmentOfModelComponentsValues["rootpe"], "rootpe", assortmentOfInvolvedComponents[componentNumericalIdentifier]))]#The number of rootpe resources that will be allocated to the specified model component
+        subprocess.call(xmlROOTPEParameter,shell=False,env=os.environ)#The list of commands will be submitted to the configuration for the CESM model.
 
 
-def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory,permittedToScale):
-    xmlNTASKSParameter =[]
-    for componentNumericalIdentifier in assortmentOfInvolvedComponents:
-        xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot", targetCaseSubDirectory,"NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale))]#The number of processors that will be allocated to the specified model component
-        subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)
+def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory,permittedToScale):#The assignValuesForNTHRDS function is for assigning the values for NTHRDS. Each component should have a value of 1 unless otherwise specified in the code.
+    xmlNTHRDSParameter =[]#XMLNTHRDSParameter will store the necessary commands to allow the proper allocations for nthrds
+    for componentNumericalIdentifier in assortmentOfInvolvedComponents:#Looping through the components to acquire each model component
+        xmlNTHRDSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot", targetCaseSubDirectory,"NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale)]#The number of processors that will be allocated to the specified model component
+        subprocess.call(xmlNTHRDSParameter,shell=False,env=os.environ)#Submit the NTHRDS allocations to be made when building the model.
 
 
 def prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier, permittedToScale):#prepCESM() function serves to prepare the basic configurations for the setup, building and submission of the CESM model.
@@ -290,19 +287,19 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     print(commandRunCESM)#Visual check over te commands to be ran for CESM
     subprocess.check_call(commandRunCESM,shell=False,env=os.environ)#Initiating the command line script to be ran within bash
     
-    print(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier, permittedToScale)+"_run"+str(threadIdentifier))
-    caseRunSubdirectory= target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier,permittedToScale)+"_run"+str(threadIdentifier)
-    caseSubDirectory =str("/glade/work/"+os.environ["USER"]+"/"+target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier,permittedToScale)+"_run"+str(threadIdentifier))
-    caseSubDirectoryExists = False
-    import time
-    for restCounter in range(25):
-        if os.path.isdir(caseSubDirectory):
-            #os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
-            print(caseSubDirectory+" has been located.")
-            break
+    print(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier, permittedToScale)+"_run"+str(threadIdentifier))# Prints the subdirectory of the relevant files of the case.
+    caseRunSubdirectory= target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier,permittedToScale)+"_run"+str(threadIdentifier)# Stores the case subdirectory as a string to use later
+    caseSubDirectory =str("/glade/work/"+os.environ["USER"]+"/"+caseRunSubdirectory)#Absolute path to the caseRunSubdirectory.
+    caseSubDirectoryExists = False# Check to make sure the Case's subdirectory exists before executing the remainder of the code.
+    import time#Import the time module of Python
+    for restCounter in range(25):#The counter to enable
+        if os.path.isdir(caseSubDirectory):#If the directory exists
+        #os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
+            print(caseSubDirectory+" has been located.")#Inform the user the directory has been located
+            break#Break out of the for loop.
         else:
-            time.sleep(3)
-            print("Still searching for "+caseSubDirectory)
+            time.sleep(3)#If not found, wait 3 seconds for each of the 25 loops.
+            print("Still searching for "+caseSubDirectory)#Inform the user that the directory is still being searched for.
     #name_of_json = input("What is the name of the json file where the data is stored?")
 
 
@@ -355,11 +352,11 @@ def checkComponentValue(componentOptimizedValues, categoryForValues, modelCompon
         else:
             return "0"
 
-def directoryCheckSafeguard(inputDirectoryPath):
-    if os.path.isdir(inputDirectoryPath):
+def directoryCheckSafeguard(inputDirectoryPath):#For checking if the directory passed as an argument to the function exists
+    if os.path.isdir(inputDirectoryPath):# If the directory exists, do nothing
         pass
     else:
-        os.mkdir(inputDirectoryPath)
+        os.mkdir(inputDirectoryPath)#If the directory does not exist, make said directory
     
 def retrieve_recent_cesm_ntasks_json_file(numberOfRetrievals):#retrieve_recent_cesm_ntasks_json_file() function is utilized to retrieve the most recent json files that are generated by the load balancing code.
     import json#importing json module of python.
@@ -408,10 +405,10 @@ def folder_name():#The function of folder_name() is used for the purpose of gett
     return named_folder# Return the submitted the name for the folder
 
 def checkSumOfTasksToMaxTasks(maxQuantityOfTasks,cesmTasksCalculated):#For ensuring that a calculated sum of the number of tasks is assigned is equivalent to the maximum number fo tasks.
-    if cesmTasksCalculated == maxQuantityOfTasks:#When they are equivalent, thenthe value of True is returned 
-        return True
+    if cesmTasksCalculated == maxQuantityOfTasks:#When they are equivalent, then the value of True is returned
+        return True#The cesmTasksCalculated is equal to the value of the maxQuantityOfTasks
     else:#otherwise False is returned
-        return False
+        return False#There is an inequality between cesmTasksCalculated and maxQuantityOfTasks
 
 
 def make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary):#make_equivalent_to_max_tasks() function is used to allocate tasks amongst the CESM components
@@ -445,8 +442,8 @@ def make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary):#make_
             if tasksProperlyAllocated ==True:#When proper allocation is achieved, break the loop.
                 break
             else:
-                ntasks_dictionary["ocn"] -=1
-                sumOfCESMTasks -= 1
+                ntasks_dictionary["ocn"] -=1#Subtracts the ntask value of the OCN component by 1
+                sumOfCESMTasks -= 1#Subtracts 1 from the sum of total ntasks
             tasksProperlyAllocated = checkSumOfTasksToMaxTasks(max_tasks_allocation, sumOfCESMTasks)#Checking if the sum of the ntasks allocation is equivalent to the total number of ntasks that have been set for the entirety of the CESM model.
             if tasksProperlyAllocated ==True:#When the tasks are are allocated, the while loop will be broken.
                 break
@@ -462,16 +459,16 @@ def default_max_tasks_json(acquired_command_line_args):#default_max_tasks_json()
     rootpeDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The ROOTPE dictionary is created prototype_run(). Placeholder until proper scaling for the allocations can be introduced.
     rootpeDictCopy = rootperecalculate(rootpeDictCopy, max_tasks_allocation)
     nthrdsDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The NTHRDS dictionaty is being created. Placeholder until proper scaling for the allocations can be introduced.
-    for componentKey in nthrdsDictCopy:
-        nthrdsDictCopy[componentKey] = "1"
-    temporaryDictionaryForSubmission ={}
-    temporaryDictionaryForSubmission.update({"ntasks": recalculated_ntasks_dictionary}) 
-    temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy})
-    temporaryDictionaryForSubmission.update({"nthrds": nthrdsDictCopy}) 
+    for componentKey in nthrdsDictCopy:#Ensures that the nthrds are limited to 1 for each component
+        nthrdsDictCopy[componentKey] = "1"#Sets each component's nthrds components to 1.
+    temporaryDictionaryForSubmission ={}#Creates a new dictionary to store all of the CESM parameters.
+    temporaryDictionaryForSubmission.update({"ntasks": recalculated_ntasks_dictionary}) # temporaryDictionaryForSubmission updated with the "ntasks" dictionary
+    temporaryDictionaryForSubmission.update({"rootpe": rootpeDictCopy})# temporaryDictionaryForSubmission updated with the "rootpe" dictionary
+    temporaryDictionaryForSubmission.update({"nthrds": nthrdsDictCopy}) # temporaryDictionaryForSubmission updated with the "nthrds" dictionary
     temporaryDictionaryForSubmission.update(totalTasksDictConversion)#Putting all of the default CESM paramter dictionaries into one complete dictionary
-    obtainCompset(temporaryDictionaryForSubmission, acquired_command_line_args)
-    simTimeMeasure(temporaryDictionaryForSubmission, acquired_command_line_args)
-    simTimeUnits(temporaryDictionaryForSubmission, acquired_command_line_args)
+    obtainCompset(temporaryDictionaryForSubmission, acquired_command_line_args)#Will obtain a compset for the CESM model if it has not already been provided.
+    simTimeMeasure(temporaryDictionaryForSubmission, acquired_command_line_args)#Will obtain a measure of time for the CESM model if it has not already been provided.
+    simTimeUnits(temporaryDictionaryForSubmission, acquired_command_line_args)#Will obtain a unit of time for the CESM model if it has not already been provided.
     collectionOfDictionariesForCESM={0:temporaryDictionaryForSubmission}#The JSON struccture conforming for the remainder of the code.
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
     print("Visual of the structure of initial dictionary:", collectionOfDictionariesForCESM)

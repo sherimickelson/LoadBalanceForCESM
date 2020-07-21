@@ -249,7 +249,7 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
     xmlNTASKSParameter = []# The list of the "ntasks" related commands to be submitted for the configuration of the CESM model build and run
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:#Looping through the components to access each of them and make sure to access each component of the CESM model
         if assortmentOfInvolvedComponents[componentNumericalIdentifier] == "wav":#The "wav" component is picked out for particular restrictions since it can become highly inefficent as more processors are assigned.
-            wavValue = int(assortmentOfModelComponentsValues["ntasks"["wav"]])
+            wavValue = int(assortmentOfModelComponentsValues["ntasks"]["wav"])
             print(wavValue)
             if int(assortmentOfModelComponentsValues[assortmentOfInvolvedComponents[componentNumericalIdentifier]]) > 108:#If the "wav" coponeent current has more than 108 sllocated for the ntasks
                 xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#Caps the WAV component at the value of 108

@@ -82,7 +82,7 @@ def prototype_run():#Original implementation from the bash script supplied by Br
 def processorMultiplierFunc(numOfProcessors, processorMultiplier,permissionToScale):#processorMultiplierFunc() multiplies the number of processors allocated per run of a specified CESM model.
     if type(numOfProcessors) == type(2):#The if statement checks to make sure that the supplied input is not an integer. It it is, the input is changed to an string.
         numOfProcessors = str(numOfProcessors)
-    print("The number of processors: "+numOfProcessors)
+    #print("The number of processors: "+numOfProcessors)
     multiplierEntry = 0
     if (permissionToScale["permit-scaling"] == True):
         multiplierEntry = processorMultiplier
@@ -101,7 +101,7 @@ def processorMultiplierFunc(numOfProcessors, processorMultiplier,permissionToSca
     else:
         numericalResult = int(numOfProcessors)
     strResult = str(numericalResult)#Convert the integer back to a string
-    print("The string result of the number of processors: "+strResult)
+    #print("The string result of the number of processors: "+strResult)
     return strResult#Returning the number fo processors that are allocated
 
 def checkCompsetValue(assortmentOfCESMValues):
@@ -296,7 +296,7 @@ def prepCESM(processorIncrementationLoops, collection_of_optimized_values, targe
     for restCounter in range(25):#The counter to enable
         if os.path.isdir(caseSubDirectory):#If the directory exists
         #os.chdir(target_directory_for_CESM+"_processors_"+processorMultiplierFunc(str(collection_of_optimized_values["totaltasks"]),threadIdentifier)+"_run"+str(threadIdentifier))#Changes the directory for the CESM project
-            print(caseSubDirectory+" has been located.")#Inform the user the directory has been located
+            #print(caseSubDirectory+" has been located.")#Inform the user the directory has been located
             break#Break out of the for loop.
         else:
             time.sleep(3)#If not found, wait 3 seconds for each of the 25 loops.
@@ -473,7 +473,7 @@ def default_max_tasks_json(acquired_command_line_args):#default_max_tasks_json()
     simTimeUnits(temporaryDictionaryForSubmission, acquired_command_line_args)#Will obtain a unit of time for the CESM model if it has not already been provided.
     collectionOfDictionariesForCESM={0:temporaryDictionaryForSubmission}#The JSON struccture conforming for the remainder of the code.
     chosen_directory = folder_name()#Asks for the name of the folder that the contents will be stored within.
-    print("Visual of the structure of initial dictionary:", collectionOfDictionariesForCESM)
+    #print("Visual of the structure of initial dictionary:", collectionOfDictionariesForCESM)
     timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct = optimize_values_allocation_run(collectionOfDictionariesForCESM, chosen_directory)#Launches the first execution of a CESM model.
     return timingFileDirectoryListConstruct, optimizedCESMParemterValuesDictionaryConstruct 
 

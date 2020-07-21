@@ -178,7 +178,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     else:
         single_collection_of_optimized_values = assortment_of_optimized_values[0]
         prepCESM(processorIncrementationLoops, single_collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, 0,permissionToScale)
-    print("Before the return, examine the timing files: ",assortmentOfTimingFileDirectory," and the CESM parameters: ", collection_of_optimized_values)
+    print("Before the return, examine the timing files: ",assortmentOfTimingFileDirectory," and the CESM parameters: ", single_collection_of_optimized_values)
     return assortmentOfTimingFileDirectory, assortment_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
 
 def acquirePermissionToScale():

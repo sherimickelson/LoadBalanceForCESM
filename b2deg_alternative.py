@@ -176,7 +176,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
             collectThread[threadingNumber].join()# For ensuring that all the threads wait for the the others to conclude to prevent issues with later parts of tf the code execution.
             print("...___...")
     else:
-        single_collection_of_optimized_values = assortment_of_optimized_values[runCount]
+        single_collection_of_optimized_values = assortment_of_optimized_values[0]
         prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, runCount,permissionToScale)
     print("Before the return, examine the timing files: ",assortmentOfTimingFileDirectory," and the CESM parameters: ", collection_of_optimized_values)
     return assortmentOfTimingFileDirectory, assortment_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.

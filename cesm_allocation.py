@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 """Reference: https://stackoverflow.com/questions/20063/whats-the-best-way-to-parse-command-line-arguments"""
 """To be ran to call b2deg_alternative.py to allow better control and manipulation of parameters from the command line."""
-"""Reference: https://stackoverflow.com/questions/12309269/how-do-i-write-json-data-to-a-file"""
+"""Reference: https://stackoverflow.com/questions/12309269/how-do-i-write-json-data-to-a-file
+https://stackoverflow.com/questions/45078474/required-is-an-invalid-argument-for-positionals-in-python-command
+    
+https://stackoverflow.com/questions/4666973/how-to-extract-the-substring-between-two-markers#:~:text=In%20python%2C%20extracting%20substring%20form,regular%20expression%20(%20re%20)%20module.&text=You%20can%20find%20first%20substring,what%20is%20after%20a%20substring.&text=%3E%3E%3E%20s%20%3D%20'%2Ftmp%2F10508.
+https://stackoverflow.com/questions/4480075/argparse-optional-positional-arguments
+    """
 import argparse
 import sys
 import subprocess

@@ -161,7 +161,6 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
         accessingTimingFileDirectory.append(False)
     print("Check access control list:", accessingTimingFileDirectory)
     permissionToScale = acquirePermissionToScale()
-    assignAmountOfTimeToBeSimulated(dictOfCESMValues)
     if processorIncrementationLoops > 1:
         for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
             collection_of_optimized_values={}
@@ -225,7 +224,7 @@ def xmlchangeDefaultOptions(targetCaseSubdirectory,collectionOfCESMValues):
     if "sim-time-designation" in collectionOfCESMValues:
         subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N="+collectionOfCESMValues["sim-time-designation"]])
     else:
-        subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=5"])
+        subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_N=2"])
     if "sim-time-unit" in collectionOfCESMValues:
         subprocess.call(["./"+targetCaseSubdirectory+"/xmlchange","--caseroot",os.getcwd()+"/"+targetCaseSubdirectory,"STOP_OPTION="+collectionOfCESMValues["sim-time-unit"]])
     else:
@@ -250,10 +249,11 @@ def assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolve
     xmlNTASKSParameter = []# The list of the "ntasks" related commands to be submitted for the configuration of the CESM model build and run
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:#Looping through the components to access each of them and make sure to access each component of the CESM model
         if assortmentOfInvolvedComponents[componentNumericalIdentifier] == "wav":#The "wav" component is picked out for particular restrictions since it can become highly inefficent as more processors are assigned.
-            if int(assortmentOfInvolvedComponents[componentNumericalIdentifier]) > 108:#If the "wav" coponeent current has more than 108 sllocated for the ntasks
+            if int(assortmentOfModelComponentsValues[assortmentOfInvolvedComponents[componentNumericalIdentifier]]) > 108:#If the "wav" coponeent current has more than 108 sllocated for the ntasks
                 xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(108)]#Caps the WAV component at the value of 108
             else:#When the "WAV" component possesses 108 or less allocated ntasks, assign that value for the "wav" component
-                xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(assortmentOfInvolvedComponents[componentNumericalIdentifier])]#The assignment of
+                xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory ,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str((checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOO
+fInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale))]#The assignment of
         else:
             xmlNTASKSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot",targetCaseSubDirectory,"NTASKS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(processorMultiplierFunc(checkComponentValue(assortmentOfModelComponentsValues["ntasks"], "ntasks", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale))]#All other components are given ntasks allocations here
         subprocess.call(xmlNTASKSParameter,shell=False,env=os.environ)#Submit commands to the configuration of the model for ntasks
@@ -452,8 +452,9 @@ def make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary):#make_
         
 
 def default_max_tasks_json(acquired_command_line_args):#default_max_tasks_json() function constructs basic json for submission to be setup and modeled by CESM. Takes an argument of the maximum amount of tasks that will be used by the model of CESM.
-    fraction_max_tasks_callocation = int(acquired_command_line_args.max_tasks_allocation)/2#In this initial setup the value of max_tasks_allocation is used to provide values by dividing the ntasks amounts.
+    fraction_max_tasks_callocation = int(acquired_command_line_args.selected_maxtasks)/2#In this initial setup the value of max_tasks_allocation is used to provide values by dividing the ntasks amounts.
     ntasks_dictionary ={"atm":fraction_max_tasks_callocation, "cpl":fraction_max_tasks_callocation, "ocn":fraction_max_tasks_callocation, "wav":fraction_max_tasks_callocation, "glc":fraction_max_tasks_callocation, "ice":fraction_max_tasks_callocation, "rof":fraction_max_tasks_callocation, "lnd":fraction_max_tasks_callocation, "esp":fraction_max_tasks_callocation}#There are allocations maintaining that each componeent initially a fraction that is roughly equivalent to the value of max_tasks_allocation
+    max_tasks_allocation = int(acquired_command_line_args.selected_maxtasks)
     recalculated_ntasks_dictionary = make_equivalent_to_max_tasks(max_tasks_allocation, ntasks_dictionary)#Recalculates the values of ntasks for each of the components to make sure that the sum of the ntasks of the components is equivalent to the value of max_tasks_allocation
     totalTasksDictConversion ={"totaltasks": max_tasks_allocation}#Creates a dictionary with the first key being "totaltasks" with the value max_tasks_allocation
     rootpeDictCopy = copy.deepcopy(recalculated_ntasks_dictionary)#The ROOTPE dictionary is created prototype_run(). Placeholder until proper scaling for the allocations can be introduced.
@@ -501,26 +502,26 @@ def simTimeMeasure(constructedDict, collectionOfComdArgs):#Function to acquire t
         inputDecision = raw_input("Do you wish to use a specified measure of time or use the default measure of time? [y/n]")# The input is "yes" or "no"
         if inputDecision.lower() == "y" or inputDecision.lower() == "yes":#When the response is "y" or "yes"
             specifiedTimeLength = raw_input("Please enter the measure of time you want to configure for the CESM model run.\n")#The measure of time to be simulated can be inputted here.
-        constructedDict.update({"sim-time-designation": specifiedTimeLength})#The quantity of time to be simulated by the model may be specified here.
-    elif inputDecision.lower() == "n" or inputDecision.lower() == "no":# If the response is n or no
-        constructedDict.update({"sim-time-designation": "5"})#Default measure of time to be simulated for the CESM model
+            constructedDict.update({"sim-time-designation": specifiedTimeLength})#The quantity of time to be simulated by the model may be specified here.
+        elif inputDecision.lower() == "n" or inputDecision.lower() == "no":# If the response is n or no
+            constructedDict.update({"sim-time-designation": "5"})#Default measure of time to be simulated for the CESM model
+        else:
+            constructedDict.update({"sim-time-designation": "5"})#Defualt measure of time to be simulated for the CESM model
     else:
-        constructedDict.update({"sim-time-designation": "5"})#Defualt measure of time to be simulated for the CESM model
-else:
-    pass
+        pass
 
 def simTimeUnits(constructedDict, collectionOfComdArgs):# Function to acquire the unit of time that the model will be simulating
     if collectionOfComdArgs.sim_time_unit == None:#When the unit for the time simulated has not been assigned
         inputDecision = raw_input("Do you wish to use a specified unit of time or use the default unit of time? [y/n]")#Obtain the response by the user which is either yes (or y) or no (or n)
         if inputDecision.lower() == "y" or inputDecision.lower() == "yes":#When the response is yes or y
             specifiedTimeUnits = raw_input("Please enter the measure of time you want to configure for the CESM model run. [Example: ndays]\n")#The user can now input the unit time of time that will be utilized for the configuration of the CESM model.
-        constructedDict.update({"sim-time-unit": specifiedTimeLength})#Places the unit of time within the dictionary to make sure that it will be ran.
-    elif inputDecision.lower() == "n" or inputDecision.lower() == "no":#When the response is 'no' or 'n'
-        constructedDict.update({"sim-time-unit": "ndays"})#The default value for the unit of time that will be used by the CESM models to be built and ran
-    else:#Otherwise (if anything else is submitted)
-        constructedDict.update({"sim-time-unit": "ndays"})#The default value for the unit of time that will be used by the CESM models to be built and ran
-else:
-    pass
+            constructedDict.update({"sim-time-unit": specifiedTimeLength})#Places the unit of time within the dictionary to make sure that it will be ran.
+        elif inputDecision.lower() == "n" or inputDecision.lower() == "no":#When the response is 'no' or 'n'
+            constructedDict.update({"sim-time-unit": "ndays"})#The default value for the unit of time that will be used by the CESM models to be built and ran
+        else:#Otherwise (if anything else is submitted)
+            constructedDict.update({"sim-time-unit": "ndays"})#The default value for the unit of time that will be used by the CESM models to be built and ran
+    else:
+        pass
 
 """The dict_optimized_values is a function to extract a dictionary of the CESM values that will be used by the next CESM model builds and runs."""
 def dict_optimized_values(ntasksDictTarget, rootpeDictTarget, nthreadsDictTarget, totaltasksValue):# Place in optimize.py to return ntasks dictionary

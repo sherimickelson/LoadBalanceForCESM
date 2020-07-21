@@ -270,7 +270,7 @@ def assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolve
 def assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory,permittedToScale):#The assignValuesForNTHRDS function is for assigning the values for NTHRDS. Each component should have a value of 1 unless otherwise specified in the code.
     xmlNTHRDSParameter =[]#XMLNTHRDSParameter will store the necessary commands to allow the proper allocations for nthrds
     for componentNumericalIdentifier in assortmentOfInvolvedComponents:#Looping through the components to acquire each model component
-        xmlNTHRDSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot", targetCaseSubDirectory,"NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]),numericalThreadIdentifier,permittedToScale)]#The number of processors that will be allocated to the specified model component
+        xmlNTHRDSParameter = ["./"+targetCaseSubDirectory+"/xmlchange","--caseroot", targetCaseSubDirectory,"NTHRDS_"+assortmentOfInvolvedComponents[componentNumericalIdentifier].upper()+"="+str(checkComponentValue(assortmentOfModelComponentsValues["nthrds"], "nthrds", assortmentOfInvolvedComponents[componentNumericalIdentifier]))]#The number of processors that will be allocated to the specified model component
         subprocess.call(xmlNTHRDSParameter,shell=False,env=os.environ)#Submit the NTHRDS allocations to be made when building the model.
 
 

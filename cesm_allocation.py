@@ -53,9 +53,13 @@ def collect_timing_files_one_folder(list_record_of_timing_files):
     import glob
     import re
     import copy
-    collection_of_recent_timing_files =glob.glob(fileItem+"/cesm_timing.*")
+    collection_of_recent_timing_files =[]
+    for fileItem in list_record_of_timing_files:
+        temporaryList =glob.glob(fileItem+"/cesm_timing.*")
+        collection_of_recent_timing_files.append(temporaryList[0])
+        print(collection_of_recent_timing_files)
     for collectedFileItem in collection_of_recent_timing_files:
-        filenameAndPath = collectedFileItem
+        filenameAndPath = collectedFileItem[0]
         filenameExtractionRe = re.search(".*/cesm_timing/",filenameAndPath)
         timing_file_name=filenameAndPath.replace(filenameExtractionRe.group(1),"")
         shutil.copyfile(collectedFileItem, "/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/"+timing_file_name)

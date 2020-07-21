@@ -53,9 +53,7 @@ def collect_timing_files_one_folder(list_record_of_timing_files):
     import glob
     import re
     import copy
-    collection_of_recent_timing_files =[]
-    for fileItem in list_record_of_timing_files:
-        collection_of_recent_timing_files.append(glob.glob(fileItem+"/cesm_timing.*"))
+    collection_of_recent_timing_files =glob.glob(fileItem+"/cesm_timing.*")
     for collectedFileItem in collection_of_recent_timing_files:
         filenameAndPath = collectedFileItem
         filenameExtractionRe = re.search(".*/cesm_timing/",filenameAndPath)

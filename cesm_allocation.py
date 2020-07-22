@@ -52,9 +52,10 @@ def collect_timing_files_one_folder(list_record_of_timing_files):
         os.mkdir(stroageDirForTiming)
     for fileItem in list_record_of_timing_files:
         timingFileCopyCommand = ["cp",fileItem,stroageDirForTiming]
-        subprocess.checkcall(stroageDirForTiming,shell=False)
+        subprocess.check_call(stroageDirForTiming,shell=False)
     print("List of timing files in storage directory:")
-    listFilesComand = ["ls",cwd=stroageDirForTiming,shell=False]
+    listFilesComand = ["ls"]
+    subprocess.check_call(listFilesComand,cwd=stroageDirForTiming,shell=False)
     
         
 

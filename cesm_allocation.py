@@ -50,8 +50,10 @@ def collect_timing_files_one_folder(list_record_of_timing_files):
         pass
     else:
         os.mkdir(stroageDirForTiming)
+    import glob
     for fileItem in list_record_of_timing_files:
-        timingFileCopyCommand = ["cp",fileItem,stroageDirForTiming]
+        acquired_timing_file=glob.glob(fileItem+"cesm_timing.*")
+        timingFileCopyCommand = ["cp",acquired_timing_file[0],stroageDirForTiming]
         subprocess.check_call(timingFileCopyCommand,shell=False)
     print("List of timing files in storage directory:")
     listFilesComand = ["ls"]

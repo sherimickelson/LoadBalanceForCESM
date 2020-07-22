@@ -141,7 +141,7 @@ def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESM
 #
 def loadBalanceThreadSpinUpConstruct(numericalIdentifierForThread, mconda_designated_environ, entireDictionaryOfCESMComponents, assortment_of_directories_for_timing_files):#loadBalanceThreadSpinUpConstruct() function the executes the load balancing the python code  with the arguments provided for the function.
     print("Load balancing run ", numericalIdentifierForThread," has been initiated")
-    subcommand = [mconda_designated_environ["LB"]+"/load_balancing_solve.py","--total-tasks",entireDictionaryOfCESMComponents["totaltasks"],"--timing-dir","/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/","--pe-output","new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"]#The command that will be utilized to executed for an instance of the load balancing code.
+    subcommand = [mconda_designated_environ["LB"]+"/load_balancing_solve.py","--total-tasks",str(entireDictionaryOfCESMComponents["totaltasks"]),"--timing-dir","/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/","--pe-output","new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"]#The command that will be utilized to executed for an instance of the load balancing code.
     print(subcommand)
     subprocess.check_call(subcommand,shell=False,env=mconda_designated_environ)#subprocess that will execute the above command in the shell.
     print("Load balancing run is executed: ", numericalIdentifierForThread)

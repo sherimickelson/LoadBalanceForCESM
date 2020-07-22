@@ -52,13 +52,11 @@ def collect_timing_files_one_folder(list_record_of_timing_files):
         os.mkdir(stroageDirForTiming)
     for fileItem in list_record_of_timing_files:
         timingFileCopyCommand = ["cp",fileItem,stroageDirForTiming]
-        subprocess.check_call(stroageDirForTiming,shell=False)
+        subprocess.check_call(timingFileCopyCommand,shell=False)
     print("List of timing files in storage directory:")
     listFilesComand = ["ls"]
     subprocess.check_call(listFilesComand,cwd=stroageDirForTiming,shell=False)
     
-        
-
 def loopControlForCESMAndLoadBalance(recordForControlCheck):#loopControlForCESMAndLoadBalance() function is used to check if the user wants the software to continue for load balancing and cesm executions.
     if recordForControlCheck == True:#Do nothing
         pass

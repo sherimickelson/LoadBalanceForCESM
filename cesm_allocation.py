@@ -45,26 +45,17 @@ def initiate_first_runCESM():#Function that intiates the default CESM run and in
         targeted_timing_files_directory = b2deg_alternative.optimize_values_allocation_run(optimized_values_cesm_json,target_directory_for_CESM)#Returning timing files directories for the CESM model that will be built and ran
 
 def collect_timing_files_one_folder(list_record_of_timing_files):
-    stroageDirForTiming ="/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing"
+    stroageDirForTiming ="/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/"
     if os.path.isdir(stroageDirForTiming):
         pass
     else:
         os.mkdir(stroageDirForTiming)
-    import glob
-    import re
-    import copy
-    collection_of_recent_timing_files =[]
     for fileItem in list_record_of_timing_files:
-        temporaryList =glob.glob(fileItem+"/cesm_timing.*")
-        collection_of_recent_timing_files.append(temporaryList[0])
-        print(collection_of_recent_timing_files)
-    for collectedFileItem in collection_of_recent_timing_files:
-        filenameAndPath = collectedFileItem
-        filenameExtractionRe = re.search(".*/cesm_timing/",filenameAndPath)
-        print(filenameAndPath)
-        print(filenameExtractionRes)
-        timing_file_name=filenameAndPath.replace(filenameExtractionRe,"")
-        shutil.copyfile(collectedFileItem, "/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/"+timing_file_name)
+        timingFileCopyCommand = ["cp",fileItem,stroageDirForTiming]
+        subprocess.checkcall(stroageDirForTiming,shell=False)
+    print("List of timing files in storage directory:")
+    listFilesComand = ["ls",cwd=stroageDirForTiming,shell=False]
+    
         
 
 def loopControlForCESMAndLoadBalance(recordForControlCheck):#loopControlForCESMAndLoadBalance() function is used to check if the user wants the software to continue for load balancing and cesm executions.

@@ -9,7 +9,9 @@
 """Reference: https://stackoverflow.com/questions/13222808/how-to-run-external-executable-using-python/13222809"""
 """Reference: https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder-using-python"""
 """Reference:https://www.geeksforgeeks.org/multithreading-python-set-1/"""
-"""Reference: https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python"""
+"""Reference: https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python
+Reference: https://stackoverflow.com/questions/11350669/subprocess-call-env-var
+Reference: https://stackoverflow.com/questions/12309269/how-do-i-write-json-data-to-a-file"""
 """Contains dependencies that cesm_allocation.py currently requires."""
 import os
 import sys

@@ -184,7 +184,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     return assortmentOfTimingFileDirectory, assortment_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
 
 def acquirePermissionToScale():
-    permissionreceived = raw_input("Do you wish to run CESM models while scaling the componenets for each run? y/n\n")
+    permissionreceived = raw_input("Do you wish to run CESM models while scaling the components for each run? y/n\n")
     userPreferredOption = {"permit-scaling":False}
     while(True):
         if (permissionreceived.lower() == "y") or (permissionreceived.lower() == "yes"):

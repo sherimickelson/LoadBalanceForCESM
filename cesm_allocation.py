@@ -31,7 +31,7 @@ def initiate_first_runCESM():#Function that intiates the default CESM run and in
     comd_line_cesm_parser.add_argument("--compset_designation", help="The compset that will be specified for the CESM model.")#Adds the compset argument ot the command line input for parsing.
     comd_line_cesm_parser.add_argument("--sim_time_designation", help="The measure of time that will be specified for the CESM model.")#Adds the compset argument ot the command line input for parsing.
     comd_line_cesm_parser.add_argument("--sim_time_unit", help="The unit of times that will be specified for the CESM model.")#Adds the compset argument ot the command line input for parsing.
-    comd_line_cesm_parser.add_argument("--scaling-factor-for-processors", help="The input for the scaling that will be utilized for concurrent building and running of CESm models.")#Adds the compset argument ot the command line input for parsing.
+    comd_line_cesm_parser.add_argument("--scaling-factor-for-processors", help="The input for the scaling that will be utilized for concurrent building and running of CESM models.")#Adds the compset argument ot the command line input for parsing.
     cesm_comd_args = comd_line_cesm_parser.parse_args()#The collection of parsing arguments to launch the CESM model with. 
     targeted_timing_files_directory, completeCESMComponentDictionaryForLoad = b2deg_alternative.default_max_tasks_json(cesm_comd_args)#Running the function Initiating CESM first to generate the timing files in the timing directory to enable the load_balancing_solve.py to run with the generated timing files for optimization
     continueRunProcess = True# A record of user response of whether the user wants to continue with initiating load balancing and CESM runs

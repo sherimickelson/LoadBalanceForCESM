@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Based on the Load Balancing code provided by Sheri Mickelson and Yuri Alekseev"""
 """Reference: https://stackoverflow.com/questions/20063/whats-the-best-way-to-parse-command-line-arguments"""
 """To be ran to call b2deg_alternative.py to allow better control and manipulation of parameters from the command line."""
 """Reference: https://stackoverflow.com/questions/12309269/how-do-i-write-json-data-to-a-file
@@ -14,7 +15,7 @@ import shutil
 import os
 import b2deg_alternative
 from threading import Thread
-# Possibility of using command line arguments
+
 
 """
 Reference: https://www.pythoncentral.io/pythons-time-sleep-pause-wait-sleep-stop-your-code/
@@ -30,7 +31,7 @@ def initiate_first_runCESM():#Function that intiates the default CESM run and in
     comd_line_cesm_parser.add_argument("--compset_designation", help="The compset that will be specified for the CESM model.")#Adds the compset argument ot the command line input for parsing.
     comd_line_cesm_parser.add_argument("--sim_time_designation", help="The measure of time that will be specified for the CESM model.")#Adds the compset argument ot the command line input for parsing.
     comd_line_cesm_parser.add_argument("--sim_time_unit", help="The unit of times that will be specified for the CESM model.")#Adds the compset argument ot the command line input for parsing.
-    comd_line_cesm_parser.add_argument("--scaling-factor-for-processors", help="The input for the scaling that will be utilized for concurrent building and running of CESm models.")#Adds the compset argument ot the command line input for parsing.
+    comd_line_cesm_parser.add_argument("--scaling-factor-for-processors", help="The input for the scaling that will be utilized for concurrent building and running of CESM models.")#Adds the compset argument ot the command line input for parsing.
     cesm_comd_args = comd_line_cesm_parser.parse_args()#The collection of parsing arguments to launch the CESM model with. 
     targeted_timing_files_directory, completeCESMComponentDictionaryForLoad = b2deg_alternative.default_max_tasks_json(cesm_comd_args)#Running the function Initiating CESM first to generate the timing files in the timing directory to enable the load_balancing_solve.py to run with the generated timing files for optimization
     continueRunProcess = True# A record of user response of whether the user wants to continue with initiating load balancing and CESM runs
@@ -44,20 +45,17 @@ def initiate_first_runCESM():#Function that intiates the default CESM run and in
         target_directory_for_CESM = b2deg_alternative.folder_name() 
         targeted_timing_files_directory = b2deg_alternative.optimize_values_allocation_run(optimized_values_cesm_json,target_directory_for_CESM)#Returning timing files directories for the CESM model that will be built and ran
 
-def collect_timing_files_one_folder(list_record_of_timing_files):
-    stroageDirForTiming ="/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/"
-    if os.path.isdir(stroageDirForTiming):
+def collect_timing_files_one_folder(list_record_of_timing_files):#The function collect_timing_files_one_folder() takes the list with the directories to the timing files as an argument and will connect the timing files from preceding CESM runs.
+    stroageDirForTiming ="/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/"#The directory that the timing files will be
+    if os.path.isdir(stroageDirForTiming):#Checks if the time file storage directory is present
         pass
-    else:
+    else:#If the time file storage directory is not present, create said directory
         os.mkdir(stroageDirForTiming)
-    import glob
-    for fileItem in list_record_of_timing_files:
-        acquired_timing_file=glob.glob(fileItem+"cesm_timing.*")
-        timingFileCopyCommand = ["cp",acquired_timing_file[0],stroageDirForTiming]
-        subprocess.check_call(timingFileCopyCommand,shell=False)
-    print("List of timing files in storage directory:")
-    listFilesComand = ["ls"]
-    subprocess.check_call(listFilesComand,cwd=stroageDirForTiming,shell=False)
+    import glob#importing the glob library of python
+    for fileItem in list_record_of_timing_files:#FOr loop that will acquire each timing file from the timing file directory.
+        acquired_timing_file=glob.glob(fileItem+"cesm_timing.*")#Stores the collected timing file in a list
+        timingFileCopyCommand = ["cp",acquired_timing_file[0],stroageDirForTiming]#Command that copies the the timing file to the sircrectory that was made to store timing files
+        subprocess.check_call(timingFileCopyCommand,shell=False)#Subprocess runs the copy command
     
 def loopControlForCESMAndLoadBalance(recordForControlCheck):#loopControlForCESMAndLoadBalance() function is used to check if the user wants the software to continue for load balancing and cesm executions.
     if recordForControlCheck == True:#Do nothing
@@ -141,24 +139,25 @@ def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESM
 #
 def loadBalanceThreadSpinUpConstruct(numericalIdentifierForThread, mconda_designated_environ, entireDictionaryOfCESMComponents, assortment_of_directories_for_timing_files):#loadBalanceThreadSpinUpConstruct() function the executes the load balancing the python code  with the arguments provided for the function.
     print("Load balancing run ", numericalIdentifierForThread," has been initiated")
-    subcommand = [mconda_designated_environ["LB"]+"/load_balancing_solve.py","--total-tasks",str(entireDictionaryOfCESMComponents["totaltasks"]),"--timing-dir","/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/","--pe-output","new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"]#The command that will be utilized to executed for an instance of the load balancing code.
-    print(subcommand)
+    subcommand = [mconda_designated_environ["LB"]+"/load_balancing_solve.py","--total-tasks",str(entireDictionaryOfCESMComponents["totaltasks"]),"--timing-dir","/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/","--pe-output","new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"]#The command that will be utilized to executed for an instance of the load balancing code. Note that it should be in the same format as what would be submitted to the command line.
+    #print(subcommand)#Perint the contents of the command to be submitted to make sure that the formatis correct and the inputs are accurate.
     subprocess.check_call(subcommand,shell=False,env=mconda_designated_environ)#subprocess that will execute the above command in the shell.
     print("Load balancing run is executed: ", numericalIdentifierForThread)
 """
 Reference: https://docs.python.org/3/library/os.html
 """
 def show_environment_variables_paths(created_environment,var_PATH,var_CIME_DIR, var_PYTHONPATH, var_LB):#For checking the environmental variables to make sure they are accurately submitted.
-    print("The environment mconda_environ is being examined:")
-    print("The PATH environment variable: "+var_PATH)
-    print("The CIME_DIR environment variable: "+var_CIME_DIR)
-    print("The PYTHONPATH environment variable: "+var_PYTHONPATH)
-    print("The LB environment variable: "+var_LB)
-    print("The paths have been displayed")
-    if os.path.isfile(var_LB+"/load_balancing_solve.py"):
+    print("The environment mconda_environ is being examined:")#The environment variables are being printed to verify that they 1. exist and 2. are correctly assigned.
+    print("The PATH environment variable: "+var_PATH)#The PATH variable is printed to verify that it has been properly assigned
+    print("The CIME_DIR environment variable: "+var_CIME_DIR)#The CIME_DIR variable is printed to verify that it has been properly assigned
+    print("The PYTHONPATH environment variable: "+var_PYTHONPATH)#The PYTHONPATH variable is printed to verify that it has been properly assigned
+    print("The LB environment variable: "+var_LB)#The LB variable is printed to verify that it has been properly assigned
+    print("The paths have been displayed")#confirming path variables are assigned
+    if os.path.isfile(var_LB+"/load_balancing_solve.py"):#Checking that Load balaclancing python script is available
         print("Load balancing python script is present.")
     else:
         print("Load balancing python script is not present")
+        exit()#If load balancing code is not present, then exit the code.
 
    
 initiate_first_runCESM() 

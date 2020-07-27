@@ -9,7 +9,9 @@
 """Reference: https://stackoverflow.com/questions/13222808/how-to-run-external-executable-using-python/13222809"""
 """Reference: https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder-using-python"""
 """Reference:https://www.geeksforgeeks.org/multithreading-python-set-1/"""
-"""Reference: https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python"""
+"""Reference: https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python
+Reference: https://stackoverflow.com/questions/11350669/subprocess-call-env-var
+Reference: https://stackoverflow.com/questions/12309269/how-do-i-write-json-data-to-a-file"""
 """Contains dependencies that cesm_allocation.py currently requires."""
 import os
 import sys
@@ -151,7 +153,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     """Setting the version of CESM to be utilized."""
     os.environ["CESMROOT"] = "/glade/work/"+os.environ["USER"]+"/Load_Balancing_Work/cesm2.1.3"#The CESMROOT environemnt variable is set.
     import json#imports the json library of python
-    processorIncrementationLoops = input("Number of times that the CESM model will be ran shall be ran. (Only integer values greater than or equal to 0) \n")#Number of iterations to run CESM, will be doubling the number of processors used each time based on the values supplied by the json files that will be loaded
+    processorIncrementationLoops = input("Number of times that the CESM model will be ran shall be ran. (Only integer values greater than or equal to 1) \n")#Number of iterations to run CESM, will be doubling the number of processors used each time based on the values supplied by the json files that will be loaded
     checkProcessorIncrementationLoops(processorIncrementationLoops)
     #Initiating new function for simplistic threading
     collectThread = {}#A dictionary that will be used to store the number of threads that will be generated dynamically
@@ -182,7 +184,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     return assortmentOfTimingFileDirectory, assortment_of_optimized_values#Returns the dictionary of values for the CESM parameters and the list of timing files.
 
 def acquirePermissionToScale():
-    permissionreceived = raw_input("Do you wish to run CESM models while scaling the componenets for each run? y/n\n")
+    permissionreceived = raw_input("Do you wish to run CESM models while scaling the components for each run? y/n\n")
     userPreferredOption = {"permit-scaling":False}
     while(True):
         if (permissionreceived.lower() == "y") or (permissionreceived.lower() == "yes"):

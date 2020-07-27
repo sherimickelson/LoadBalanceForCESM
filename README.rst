@@ -28,11 +28,11 @@ This function will scale the processors of the CESM models while building. There
 cesm_allocation.py
 The load balncing software code is initiated in this file and the function that manages the highest level function amongst b2deg_alternative.py and cesm_allocation.py. This python file is the one that is run from the command line.
 
-Setup
+
 
 Basic Execution Instructions:
 In the command line, type cesm_allocation.py [max_tasks_to_be_allocated].
 Then proceed to type in the user responses to the inputs that are prompted.
-Wait for CESM models to build and successfully run then confirm whether load balancing software should be initiated. 
+Wait for CESM models to build and successfully run then confirm whether load balancing software should be initiated.
 
 

@@ -23,7 +23,13 @@ Original function that was devised based off of the bash implementation that was
 --processorMultiplierFunc(numOfProcessors, processorMultiplier,permissionToScale)
 This function will scale the processors of the CESM models while building. There can be linear scaling by 2 or exponential scaling by 2. The information for scaling is stored within the dictionary for the CESM values.For functionality related to scaling, focus on this function in particular. Only call this function in the possiility that a CESM parameter will be scaled. Exponential scaling allows for scaling with the indicated powers and linear scaling allows for scaling with the indicated multiples.
 
---
+--checkCompsetValue(assortmentOfCESMValue)
+Can be used as a tool to check the compsets that will be ran in dictionary containing the CESM values for each model of CESM that will be built and ran.
+
+--assignAmountOfTimeToBeSimulated(dictOfCESMValues)
+The amount of time that will be utilized for simulation within the model. This function deals with the amount of time, not the units of said time.
+
+--checkProcessorIncrementationLoops(valueSpecifiedForCESMRuns)
 
 cesm_allocation.py
 The load balncing software code is initiated in this file and the function that manages the highest level function amongst b2deg_alternative.py and cesm_allocation.py. This python file is the one that is run from the command line.

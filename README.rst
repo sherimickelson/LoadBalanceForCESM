@@ -57,6 +57,10 @@ Assigns the rootpe for the various components. Possesses the ability to scale th
 Assigns the number of threads for each component. does not scale the component inputs provided to it.
 
 --prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier, permittedToScale)
+The prepCESM() function is designed take care of building and running the model after the optimize_values_allocation_run() function is called. The dirctory for the new case is developed hereas well as the call of the assignValuesForNTASKS(), assignValuesForROOTPE(), and assignValuesForNTHRDS() functions. The timing file directory is copied to be eventually shared with the load balancer later.
+
+--checkComponentValue(componentOptimizedValues, categoryForValues, modelComponent)
+The
 
 cesm_allocation.py
 The load balncing software code is initiated in this file and the function that manages the highest level function amongst b2deg_alternative.py and cesm_allocation.py. This python file is the one that is run from the command line.

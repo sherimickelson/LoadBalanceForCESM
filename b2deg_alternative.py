@@ -2,17 +2,33 @@
 """Author: Thomas Johnson III"""
 """Based off of b2deg.sh written by Brian Dobbins"""
 """May 27th, 2020"""
-"""Reference: https://github.com/ESMCI/cime/blob/master/tools/load_balancing_tool/load_balancing_submit.py"""
-"""Reference:https://www.freecodecamp.org/news/python-for-system-administration-tutorial/"""
-"""Reference: https://stackoverflow.com/questions/4256107/running-bash-commands-in-python"""
-"""Reference: https://www.journaldev.com/24935/python-set-environment-variable"""
-"""Reference: https://stackoverflow.com/questions/13222808/how-to-run-external-executable-using-python/13222809"""
-"""Reference: https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder-using-python"""
-"""Reference:https://www.geeksforgeeks.org/multithreading-python-set-1/"""
-"""Reference: https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python
-Reference: https://stackoverflow.com/questions/11350669/subprocess-call-env-var
-Reference: https://stackoverflow.com/questions/12309269/how-do-i-write-json-data-to-a-file"""
-"""Contains dependencies that cesm_allocation.py currently requires."""
+"""Reference: https://github.com/ESMCI/cime/blob/master/tools/load_balancing_tool/load_balancing_submit.py
+Reference:https://www.freecodecamp.org/news/python-for-system-administration-tutorial/
+Reference: https://stackoverflow.com/questions/4256107/running-bash-commands-in-python
+Reference: https://www.journaldev.com/24935/python-set-environment-variable
+Reference: https://stackoverflow.com/questions/13222808/how-to-run-external-executable-using-python/13222809
+Reference: https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder-using-python
+Reference:https://www.geeksforgeeks.org/multithreading-python-set-1/
+ https://stackoverflow.com/questions/55529319/how-to-create-multiple-threads-dynamically-in-python
+https://stackoverflow.com/questions/11350669/subprocess-call-env-var
+https://stackoverflow.com/questions/12309269/how-do-i-write-json-data-to-a-file
+https://stackoverflow.com/questions/12309269/how-do-i-write-json-data-to-a-file
+https://stackoverflow.com/questions/39327032/how-to-get-the-latest-file-in-a-folder-using-python
+https://stackoverflow.com/questions/2231227/python-subprocess-popen-with-a-modified-environment
+https://stackoverflow.com/questions/51415248/access-another-dictionary-using-same-key
+https://stackoverflow.com/questions/2482957/what-is-critical-section-in-threading
+https://stackoverflow.com/questions/7427101/simple-argparse-example-wanted-1-argument-3-results
+https://stackoverflow.com/questions/6393073/why-should-you-lock-threads
+https://stackoverflow.com/questions/2171681/do-i-need-to-lock-object-when-reading-from-it#:~:text=depends%20on%20how%20you%20use,should%20lock%20it%20for%20read.
+https://stackoverflow.com/questions/11968689/python-multithreading-wait-till-all-threads-finished
+https://stackoverflow.com/questions/24180527/argparse-required-arguments-listed-under-optional-arguments
+https://stackoverflow.com/questions/423710/how-to-return-more-than-one-value-from-a-function-in-python
+https://stackoverflow.com/questions/3964681/find-all-files-in-a-directory-with-extension-txt-in-python
+https://stackoverflow.com/questions/21406887/subprocess-changing-directory
+https://stackoverflow.com/questions/4666973/how-to-extract-the-substring-between-two-markers#:~:text=In%20python%2C%20extracting%20substring%20form,regular%20expression%20(%20re%20)%20module.&text=You%20can%20find%20first%20substring,what%20is%20after%20a%20substring.&text=%3E%3E%3E%20s%20%3D%20'%2Ftmp%2F10508.
+https://stackoverflow.com/questions/45078474/required-is-an-invalid-argument-for-positionals-in-python-command
+
+Contains dependencies that cesm_allocation.py currently requires."""
 import os
 import sys
 import subprocess

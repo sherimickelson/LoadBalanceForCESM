@@ -23,7 +23,44 @@ Original function that was devised based off of the bash implementation that was
 --processorMultiplierFunc(numOfProcessors, processorMultiplier,permissionToScale)
 This function will scale the processors of the CESM models while building. There can be linear scaling by 2 or exponential scaling by 2. The information for scaling is stored within the dictionary for the CESM values.For functionality related to scaling, focus on this function in particular. Only call this function in the possiility that a CESM parameter will be scaled. Exponential scaling allows for scaling with the indicated powers and linear scaling allows for scaling with the indicated multiples.
 
---
+--checkCompsetValue(assortmentOfCESMValue)
+Can be used as a tool to check the compsets that will be ran in dictionary containing the CESM values for each model of CESM that will be built and ran.
+
+--assignAmountOfTimeToBeSimulated(dictOfCESMValues)
+The amount of time that will be utilized for simulation within the model. This function deals with the amount of time, not the units of said time.
+
+--checkProcessorIncrementationLoops(valueSpecifiedForCESMRuns)
+Ensures that the value inputted for the for loop to spin up threads for building separate CESM models and running them is a positive integer.
+
+--optimize_values_allocation_run(assortment_of_optimized_values, target_directory_for_CESM)
+Function that begins the process for building CESM models and manages the organization of the threads that said CESM models will be built and ran in. Includes checks to make sure that correct directories exist before being accessed. There are also checks to make sure that the threads are not accessing the same resources as the same time. The threads that are generated are organized through the use of a dictionary that uses numerical keys to identify each thread.
+
+--acquirePermissionToScale()
+The function acquirePermissionToScale() is used to acquire the information of whether user wants to scale the cores allocated for each. If the user decides to scale the number of cores, the method of scaling, linear or exponential must be inputted as well.
+
+--startCESMProcess(targetCaseSubdirectory)
+Initiates the basic commands to setup, build then run the CESM models.
+
+--xmlchangeDefaultOptions(targetCaseSubdirectory,collectionOfCESMValues)
+The xml options are set in this command. This includes the time being simulated and wallclock_time for the CESM model.
+
+--checkTimingDirectoryListEdit(recordOfTimingDirectoryAccesses)
+Checks for the access of the access of tht timing file directories. Each array element manages the the status of the threads as they attempt to access the timing file directory.
+
+--assignValuesForNTASKS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory,permittedToScale)
+The assignValuesForNTASKS() function is for setting the xml configurations for the amount of tasks to be allocated and to which component. The tasks for the WAV componenet are capped here to preserve the efficiency of the overall model. To edit such, edit the if statements. Due to the scaling of tasks if indicated by the user, the permittedToScale and numericalThreadIdentifier arguments are present.
+
+--assignValuesForROOTPE(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory, permittedToScale)
+Assigns the rootpe for the various components. Possesses the ability to scale the inputs similar to theassignValuesForNTASKS() function.
+
+--assignValuesForNTHRDS(assortmentOfModelComponentsValues, assortmentOfInvolvedComponents, numericalThreadIdentifier, targetCaseSubDirectory,permittedToScale)
+Assigns the number of threads for each component. does not scale the component inputs provided to it.
+
+--prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier, permittedToScale)
+The prepCESM() function is designed take care of building and running the model after the optimize_values_allocation_run() function is called. The dirctory for the new case is developed hereas well as the call of the assignValuesForNTASKS(), assignValuesForROOTPE(), and assignValuesForNTHRDS() functions. The timing file directory is copied to be eventually shared with the load balancer later.
+
+--checkComponentValue(componentOptimizedValues, categoryForValues, modelComponent)
+The
 
 cesm_allocation.py
 The load balncing software code is initiated in this file and the function that manages the highest level function amongst b2deg_alternative.py and cesm_allocation.py. This python file is the one that is run from the command line.

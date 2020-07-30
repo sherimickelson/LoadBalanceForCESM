@@ -1,0 +1,7 @@
+export PATH=/glade/work/$USER/miniconda/bin/:$PATH
+export CIME_MACHINE=cheyenne
+export CIME_DIR=../../cesm2.1.3/cime
+export PYTHONPATH=$CIME_DIR/scripts:load_balancing_tool_SIParCS2020/
+export LB=load_balancing_tool_SIParCS2020/
+python $LB/load_balancing_solve.py --total-tasks 576 --blocksize-atm 36  --blocksize-ice 1 --blocksize-cpl 1 --blocksize-wav 1 --blocksize-lnd 1 --blocksize-rof 1 --blocksize-ocn 36  --blocksize-glc 1 --blocksize-esp 1 --optimizer 1  --timing-dir ./timing_files_B1850_f09_5data/ --pe-output new_env_mach_pes.xml
+

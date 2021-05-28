@@ -46,15 +46,20 @@ def initiate_first_runCESM():#Function that intiates the default CESM run and in
         targeted_timing_files_directory = b2deg_alternative.optimize_values_allocation_run(optimized_values_cesm_json,target_directory_for_CESM)#Returning timing files directories for the CESM model that will be built and ran
 
 def collect_timing_files_one_folder(list_record_of_timing_files):#The function collect_timing_files_one_folder() takes the list with the directories to the timing files as an argument and will connect the timing files from preceding CESM runs.
-    stroageDirForTiming ="/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/"#The directory that the timing files will be
-    if os.path.isdir(stroageDirForTiming):#Checks if the time file storage directory is present
+    check_for_glade_value = check_for_glade()
+    storageDirForTiming = ""
+    if check_for_glade_value == True:
+        storageDirForTiming ="/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/"#The directory that the timing files will be
+    else: 
+        storageDirForTiming = os.getcwd()+"/load_balancing_access_timing/"#The directory that the timing files will be
+    if os.path.isdir(storageDirForTiming):#Checks if the time file storage directory is present
         pass
     else:#If the time file storage directory is not present, create said directory
-        os.mkdir(stroageDirForTiming)
+        os.mkdir(strorageDirForTiming)
     import glob#importing the glob library of python
     for fileItem in list_record_of_timing_files:#FOr loop that will acquire each timing file from the timing file directory.
         acquired_timing_file=glob.glob(fileItem+"cesm_timing.*")#Stores the collected timing file in a list
-        timingFileCopyCommand = ["cp",acquired_timing_file[0],stroageDirForTiming]#Command that copies the the timing file to the sircrectory that was made to store timing files
+        timingFileCopyCommand = ["cp",acquired_timing_file[0],storageDirForTiming]#Command that copies the the timing file to the sircrectory that was made to store timing files
         subprocess.check_call(timingFileCopyCommand,shell=False)#Subprocess runs the copy command
     
 def loopControlForCESMAndLoadBalance(recordForControlCheck):#loopControlForCESMAndLoadBalance() function is used to check if the user wants the software to continue for load balancing and cesm executions.
@@ -92,7 +97,13 @@ def dict_optimized_values(dictOfOptimizedValues):# Place in optimize.py to retur
     while json_location_exist == True:#While loop that will repeat the naming process until the json file has a name that is not present in the designated directory
         if os.path.isfile(json_location_prefix+".json"):#Check the file name with .json file extension appended
             json_location_prefix =input("The current file name entered already exists. Please input a prefix for the file that does not exist.")# Allows the user to attempt to input another file name until the file name does not match any that is in the directory
-    with open("/glade/work/$USER/optimum_json/"+json_location_prefix+".json", "w") as amendableFile:# Now writing the json content to the file
+    file_directory = ""
+    check_for_glade_result = check_for_glade()
+    if check_for_glade_result == True:
+        file_directory = "/glade/work/$USER/optimum_json/"+json_location_prefix+".json"
+    else:
+        file_directory = os.getcwd()+"/optimum_json/"+json_location_prefix+".json"
+    with open(file_directory, "w") as amendableFile:# Now writing the json content to the file
         json.dump(dictOfOptimizedValues, amendableFile)# The json contents are not being stored into the file 
 
 def check_for_glade():
@@ -157,7 +168,12 @@ def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESM
 #
 def loadBalanceThreadSpinUpConstruct(numericalIdentifierForThread, mconda_designated_environ, entireDictionaryOfCESMComponents, assortment_of_directories_for_timing_files):#loadBalanceThreadSpinUpConstruct() function the executes the load balancing the python code  with the arguments provided for the function.
     print("Load balancing run ", numericalIdentifierForThread," has been initiated")
-    subcommand = [mconda_designated_environ["LB"]+"/load_balancing_solve.py","--total-tasks",str(entireDictionaryOfCESMComponents["totaltasks"]),"--timing-dir","/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/","--pe-output","new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"]#The command that will be utilized to executed for an instance of the load balancing code. Note that it should be in the same format as what would be submitted to the command line.
+    check_for_glade_directory = check_for_glade()
+    subcommamnd =""
+    if check_for_glade_directory == True:
+        subcommand = [mconda_designated_environ["LB"]+"/load_balancing_solve.py","--total-tasks",str(entireDictionaryOfCESMComponents["totaltasks"]),"--timing-dir","/glade/work/"+os.environ["USER"]+"/load_balancing_access_timing/","--pe-output","new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"]#The command that will be utilized to executed for an instance of the load balancing code. Note that it should be in the same format as what would be submitted to the command line.
+    else:
+        subcommand = [mconda_designated_environ["LB"]+"/load_balancing_solve.py","--total-tasks",str(entireDictionaryOfCESMComponents["totaltasks"]),"--timing-dir",os.getcwd()+"/load_balancing_access_timing/","--pe-output","new_env_mach_pes_run_"+str(numericalIdentifierForThread)+".xml"]
     #print(subcommand)#Perint the contents of the command to be submitted to make sure that the formatis correct and the inputs are accurate.
     subprocess.check_call(subcommand,shell=False,env=mconda_designated_environ)#subprocess that will execute the above command in the shell.
     print("Load balancing run is executed: ", numericalIdentifierForThread)

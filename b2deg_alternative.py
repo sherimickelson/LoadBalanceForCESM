@@ -151,6 +151,12 @@ def checkProcessorIncrementationLoops(valueSpecifiedForCESMRuns):
     else:
         pass
 
+def check_for_glade():
+    if os.path.isdir("/glade/u/home"):
+        return True
+    else:
+        return False
+
 """Reference: https://www.geeksforgeeks.org/convert-json-to-dictionary-in-python/"""
 def optimize_values_allocation_run(assortment_of_optimized_values, target_directory_for_CESM):#The optimize_values_allocation_run function takes values from jsons that have the specifications for the number of processors for each component as well as the totla number of processors
     """Does the file directory already exist? Now we check:"""
@@ -167,7 +173,11 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
 
     """Setting up the case."""
     """Setting the version of CESM to be utilized."""
-    os.environ["CESMROOT"] = "/glade/work/"+os.environ["USER"]+"/Load_Balancing_Work/cesm2.1.3"#The CESMROOT environemnt variable is set.
+    check_glade = check_for_glade()
+    if check_glade == True:
+        os.environ["CESMROOT"] = "/glade/work/"+os.environ["USER"]+"/Load_Balancing_Work/cesm2.1.3"#The CESMROOT environemnt variable is set.
+    else:
+        os.environ["CESMROOT"] = os.getcwd()+"/Load_Balancing_Work/cesm2.1.3"#The CESMROOT environemnt variable is set.
     import json#imports the json library of python
     processorIncrementationLoops = input("Number of times that the CESM model will be ran shall be ran. (Only integer values greater than or equal to 1) \n")#Number of iterations to run CESM, will be doubling the number of processors used each time based on the values supplied by the json files that will be loaded
     checkProcessorIncrementationLoops(processorIncrementationLoops)
@@ -180,7 +190,7 @@ def optimize_values_allocation_run(assortment_of_optimized_values, target_direct
     print("Check access control list:", accessingTimingFileDirectory)
     permissionToScale = acquirePermissionToScale()
     if processorIncrementationLoops > 1:
-        for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each looop that is initiated.
+        for runCount in range(processorIncrementationLoops):#For loop of the the specified number of loops as indicated earlier in the processorIncrementationLoops variable. The number of processors will double for each loop that is initiated.
             collection_of_optimized_values={}
             if runCount in assortment_of_optimized_values:
                 collection_of_optimized_values = assortment_of_optimized_values[runCount]#Access the specific dictionary of CESM parameter values that has the key matching the value of the current iteration

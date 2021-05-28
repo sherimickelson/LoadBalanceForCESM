@@ -59,16 +59,16 @@ Assigns the number of threads for each component. does not scale the component i
 --prepCESM(processorIncrementationLoops, collection_of_optimized_values, target_directory_for_CESM, assortmentOfTimingFileDirectory, accessingTimingFileDirectory, threadIdentifier, permittedToScale)
 The prepCESM() function is designed take care of building and running the model after the optimize_values_allocation_run() function is called. The dirctory for the new case is developed hereas well as the call of the assignValuesForNTASKS(), assignValuesForROOTPE(), and assignValuesForNTHRDS() functions. The timing file directory is copied to be eventually shared with the load balancer later.
 
---checkComponentValue(componentOptimizedValues, categoryForValues, modelComponent)
-The
-
 cesm_allocation.py
 The load balncing software code is initiated in this file and the function that manages the highest level function amongst b2deg_alternative.py and cesm_allocation.py. This python file is the one that is run from the command line.
 
 Setup:
 Make the following challenges to optimize.py
+
 Add this function:
--------------------------------------------------------------------------------
+
+_____________________________________________________________________________
+
 """The dict_optimized_values is a function to extract a dictionary of the CESM values that will be used by the next CESM model builds and runs."""
 def dict_optimized_values(ntasksDictTarget, rootpeDictTarget, nthreadsDictTarget, totaltasksValue):# Place in optimize.py to return ntasks dictionary
     import os#Imports os
@@ -76,10 +76,10 @@ def dict_optimized_values(ntasksDictTarget, rootpeDictTarget, nthreadsDictTarget
     logger.info("Beginning to write the json")#Starts to write the json file
     json_location_prefix = "optimization_dictionaries"#Will be the prefix for the name of the job
     placeholderDictionary = {}#Dictionary to be used for storing the CESM parameters.
-    placeholderDictionary.update({"ntasks": ntasksDictTarget})#The placeholherDictionary is being updated witht he "ntasks" dictionary
-    placeholderDictionary.update({"rootpe": rootpeDictTarget})#The placeholherDictionary is being updated witht he "rootpe" dictionary
-    placeholderDictionary.update({"nthrds": nthreadsDictTarget})#The placeholherDictionary is being updated witht he "nthrds" dictionary
-    placeholderDictionary.update({"totaltasks": totaltasksValue})#The placeholherDictionary is being updated witht he "totaltasks" dictionary
+    placeholderDictionary.update({"ntasks": ntasksDictTarget})#The placeholherDictionary is being updated with the "ntasks" dictionary
+    placeholderDictionary.update({"rootpe": rootpeDictTarget})#The placeholherDictionary is being updated with the "rootpe" dictionary
+    placeholderDictionary.update({"nthrds": nthreadsDictTarget})#The placeholherDictionary is being updated with the "nthrds" dictionary
+    placeholderDictionary.update({"totaltasks": totaltasksValue})#The placeholherDictionary is being updated with the "totaltasks" dictionary
     json_location_exist = True#Boolean to chck that the file name eists
     iteration = 1#Increments to provide a number to differentiate the json files from one another
     logger.info("Checking json file presence.")#Start of the process to check for presence of file with proposed file name.
@@ -94,7 +94,8 @@ def dict_optimized_values(ntasksDictTarget, rootpeDictTarget, nthreadsDictTarget
             json_location_exist= False#Boolean json_location_exist variable is assigned the value of False
     with open("/glade/work/"+os.environ["USER"]+"/optimum_json/"+json_location_prefix+".json", "w") as amendableFile:#Opening up the new json file to be written to.
         json.dump(placeholderDictionary, amendableFile)#Writes to the opened jsonfile
------------------------------------------------------------------------------------------------------
+
+_______________________________________________________________________________________________
 
 Add call for said function in the write_pe_template() function of optimize_model.py for Load Balancing Code.
 

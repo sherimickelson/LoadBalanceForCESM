@@ -67,7 +67,7 @@ Make the following challenges to optimize.py
 
 Add this function:
 
--------------------------------------------------------------------------------
+_____________________________________________________________________________
 
 """The dict_optimized_values is a function to extract a dictionary of the CESM values that will be used by the next CESM model builds and runs."""
 def dict_optimized_values(ntasksDictTarget, rootpeDictTarget, nthreadsDictTarget, totaltasksValue):# Place in optimize.py to return ntasks dictionary
@@ -95,7 +95,7 @@ def dict_optimized_values(ntasksDictTarget, rootpeDictTarget, nthreadsDictTarget
     with open("/glade/work/"+os.environ["USER"]+"/optimum_json/"+json_location_prefix+".json", "w") as amendableFile:#Opening up the new json file to be written to.
         json.dump(placeholderDictionary, amendableFile)#Writes to the opened jsonfile
 
------------------------------------------------------------------------------------------------------
+_______________________________________________________________________________________________
 
 Add call for said function in the write_pe_template() function of optimize_model.py for Load Balancing Code.
 

@@ -94,6 +94,13 @@ def dict_optimized_values(dictOfOptimizedValues):# Place in optimize.py to retur
             json_location_prefix =input("The current file name entered already exists. Please input a prefix for the file that does not exist.")# Allows the user to attempt to input another file name until the file name does not match any that is in the directory
     with open("/glade/work/$USER/optimum_json/"+json_location_prefix+".json", "w") as amendableFile:# Now writing the json content to the file
         json.dump(dictOfOptimizedValues, amendableFile)# The json contents are not being stored into the file 
+
+def check_for_glade():
+    if os.path.isdir("/glade/u/home/"):
+        return True
+    else:
+        False
+
 """
 Reference: https://docs.python.org/3/library/subprocess.html
 Reference: https://stackoverflow.com/questions/2231227/python-subprocess-popen-with-a-modified-environment
@@ -102,11 +109,22 @@ Reference: https://stackoverflow.com/questions/40697845/what-is-a-good-practice-
 def intiate_base_load_balancing(timing_file_directory, completeDictionaryForCESMComponents):# Runs the cesm and load balancing python code
     import time# Time imported on to allow for waiting
     print("Load balancing software initiated.")
+    glade_check = check_for_glade()
     mconda_environ = os.environ.copy()#Now making a clone of the environment to assign the environment variables of "PATH," "CIME_DIR," "PYTHONPATH," and "LB" for usage in running the Load balacing code
-    mconda_environ["PATH"] = "/glade/u/home/"+mconda_environ["USER"]+"/miniconda2/bin/"#Assigning the "PATH" variable to the copied environment
-    mconda_environ["CIME_DIR"] ="/glade/work/"+mconda_environ["USER"]+"/Load_Balancing_Work/cesm2.1.3/cime"#Assigning the "CIME_DIR" variable to the copied environment
-    mconda_environ["PYTHONPATH"] = mconda_environ["CIME_DIR"]+"/scripts:"+mconda_environ["CIME_DIR"]+"/tools/load_balancing_tool"#Assigning the "PYTHONPATH" variable to the copied environment
-    mconda_environ["LB"] = mconda_environ["CIME_DIR"]+"/tools/load_balancing_tool"#Assigning the "LB" variable to the copied environment
+    mconda_environ["PATH"] =""
+    mconda_environ["CIME_DIR"] = ""
+    mconda_environ["PYTHONPATH"] = ""
+    mconda_environ["LB"] = ""
+    if glade_check == True:
+        mconda_environ["PATH"] ="/glade/u/home/"+mconda_environ["USER"]+"/miniconda2/bin/"#Assigning the "PATH" variable to the copied environment
+        mconda_environ["CIME_DIR"] = "/glade/work/"+mconda_environ["USER"]+"/Load_Balancing_Work/cesm2.1.3/cime"#Assigning the "CIME_DIR" variable to the copied environment
+        mconda_environ["PYTHONPATH"] = mconda_environ["CIME_DIR"]+"/scripts:"+mconda_environ["CIME_DIR"]+"/tools/load_balancing_tool"#Assigning the "PYTHONPATH" variable to the copied environment
+        mconda_environ["LB"] = mconda_environ["CIME_DIR"]+"/tools/load_balancing_tool"#Assigning the "LB" variable to the copied environment
+    else:
+        mconda_environ["PATH"] =os.getcwd()+"/miniconda2/bin/"
+        mconda_environ["CIME_DIR"] = os.getcwd()+"/Load_Balancing_Work/cesm2.1.3/cime"
+        mconda_environ["PYTHONPATH"] = mconda_environ["CIME_DIR"]+"/scripts:"+mconda_environ["CIME_DIR"]+"/tools/load_balancing_tool"
+        mconda_environ["LB"] = mconda_environ["CIME_DIR"]+"/tools/load_balancing_tool"
     time.sleep(2)#Give a period of time for the bash outputs to be shown before the python outputs are displayed
     if "CIME_DIR" in mconda_environ:#Check to see if the "CIME_DIR" environment variable has been set within the cloned environment
         print("The environment variable CIME_DIR has been set.")#The "CIME_DIR" environment variable has been set within the cloned environment 
